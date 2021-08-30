@@ -68,11 +68,11 @@ plotter.plot({"acceptance_corrected": True, "xlabel_invmass": f"m($\eta\pi_0$) G
 ```
 
 ## TODO
-Add the following plotting methods:
-* a display of the complex amplitudes in a 2D scatter plot for each wave in each bin
-* add confidence intervals for bootstrapping
-* plot angular distributions for each bin and the fit projections onto the accepted MC
-Create a divider for ```split_t```
-Write a generator for SDME config files
-Write a plotting method for SDMEs
-Write API documentation
+* Add the following plotting methods:
+    * a display of the complex amplitudes in a 2D scatter plot for each wave in each bin
+    * add confidence intervals for bootstrapping
+    * plot angular distributions for each bin and the fit projections onto the accepted MC
+* Create a divider for ```split_t```
+* Write a generator for SDME config files
+* Write a plotting method for SDMEs
+* Write API documentation
