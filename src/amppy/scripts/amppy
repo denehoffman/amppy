@@ -5,15 +5,21 @@ from amppy.dividers import Divider_split_mass
 from amppy.dividers.Divider import get_divider_type_string
 from amppy import backends
 from amppy.backends.SLURM import SLURM
+from amppy.generators.Generator_Zlm import Generator_Zlm
 from simple_term_menu import TerminalMenu
 from pathlib import Path
 import errno
+import matplotlib.backends.backend_pdf
+from amppy import plotting
 
-def config_menu(root_dir: Path):
+def config_menu(root_dir: Path, fit=False):
     if not root_dir.is_dir():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(path))
-    configs = list(root_dir.glob("*.cfg"))
-    config_menu_items = ["Cancel"] + [f.name + (" " * (40 - len(f.name))) + ("(fit)" if (f.parent / (f.stem + "::fit_results.txt")).exists() else "  *  ") for f in configs]
+    if not fit:
+        configs = list(root_dir.glob("*.cfg"))
+    else:
+        configs = [cfg for cfg in root_dir.glob("*.cfg") if (cfg.parent / (cfg.stem + "::fit_results.txt")).exists()]
+    config_menu_items = ["Cancel"] + [f.stem + (" " * (40 - len(f.stem))) + ("(bootstrapped)" if (f.parent / (f.stem + "_bootstrap::fit_results.txt")).exists() else ("    (fit)    " if (f.parent / (f.stem + "::fit_results.txt")).exists() else "      *      ")) for f in configs]
     config_menu = TerminalMenu(menu_entries=config_menu_items,
                                title="Select an AmpTools Config File",
                                menu_cursor="> ",
@@ -43,6 +49,7 @@ class MainParser(object):
         print('''usage: amppy <command> [<args>]
 
 Possible commands include:
+    generate    Generate an AmpTools configuration file
     divide      Divide data into bins in a new fit directory
     add         Add a configuration file to an existing fit directory
     fit         Run fits using AmpTools
@@ -50,6 +57,11 @@ Possible commands include:
     plot        Plot results
 
 See 'amppy <command> --help' to read about a specific subcommand''')
+
+
+    def generate(self):
+        generator = Generator_Zlm()
+        generator.show_menu()
 
 
     def divide(self):
@@ -181,14 +193,50 @@ Possible dispatchers include:''')
                 d.setup(args.directory, config, args.i, args.s, True, args.v)
                 if args.rerun:
                     d.remove_fits()
-                d.bootstrap_config()
                 d.dispatch(**vars(args))
             else:
                 print(f"'{dispatcher_name}' is not a valid dispatcher")
                 print()
                 print_help()
 
-
+    def plot(self):
+        parser = argparse.ArgumentParser(prog="amppy plot",
+                                         description="Generate plots from AmpTools fits")
+        parser.add_argument("directory")
+        parser.add_argument("-o", "--output", type=str, help="output file name")
+        if len(sys.argv) == 2:
+            parser.print_help()
+            sys.exit(1)
+        args = parser.parse_args(sys.argv[2:])
+        config = str(config_menu(Path(args.directory).resolve(), fit=True))
+        if args.output is None:
+            pdf_path = Path(config).resolve().parent / (Path(config).resolve().stem + "_plots.pdf")
+        else:
+            if not args.output.endswith(".pdf"):
+                args.output += ".pdf"
+            pdf_path = Path(args.output).resolve()
+        plotter_list = [name + (40 - len(name)) * " " + desc for name, desc in plotting.plotter_descriptions] + ["Cancel"]
+        plot_menu = TerminalMenu(menu_entries=plotter_list,
+                                title="Select plotters",
+                                menu_cursor="> ",
+                                menu_cursor_style=("fg_red", "bold"),
+                                menu_highlight_style=("bg_black", "fg_green"),
+                                cycle_cursor=True,
+                                multi_select=True,
+                                show_multi_select_hint=True)
+        sels = plot_menu.show()
+        if plotter_list[sels[-1]] != "Cancel":
+            output_pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
+            kwargs = {}
+            plotter_objs = []
+            for sel in sels:
+                plotter = plotting.plotters[sel](output_pdf, config)
+                kwargs = plotter.configure(kwargs)
+                plotter_objs.append(plotter)
+            for plotter in plotter_objs:
+                plotter.plot(kwargs)
+            output_pdf.close()
+        
 
 
 

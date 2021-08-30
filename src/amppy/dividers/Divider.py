@@ -3,6 +3,7 @@ import errno
 from pathlib import Path
 import numpy as np
 import os
+from halo import Halo
 
 class Divider(ABC):
 
@@ -227,12 +228,23 @@ class Divider(ABC):
         self.load_paths(root, config, data, gen, acc, bkg)
         self.create_bins()
         self.write_bin_info(f"bin\t{variable_name}\n")
+        spinner = Halo(text='Dividing Data', spinner='dots')
+        spinner.start("Dividing data")
         self.divide_directory(self.data_directory, "_DATA_", **kwargs)
+        spinner.succeed("Data divided")
+        spinner.start("Dividing thrown/generated MC")
         self.divide_directory(self.generated_directory, "_GEN_", **kwargs)
+        spinner.succeed("Thrown MC divided")
+        spinner.start("Dividing accepted MC")
         self.divide_directory(self.accepted_directory, "_ACCEPT_", **kwargs)
+        spinner.succeed("Accepted MC divided")
         if bkg != None:
+            spinner.start("Dividing background")
             self.divide_directory(self.data_directory, "_BKG_", **kwargs)
+            spinner.succeed("Background divided")
+        spinner.start("Moving ROOT files into bins")
         self.bin_split_files()
+        spinner.succeed("ROOT files have been binned")
         self.gen_config()
         self.postprocessing(**kwargs)
 

@@ -181,12 +181,12 @@ class Dispatcher(ABC):
 
     def get_fit_results_files(self, bin_n, iteration):
         fit_file = (self.bin_dirs[bin_n] / str(iteration) / f"{self.config_template.stem}_{bin_n}::fit_results.txt").resolve()
-        bootstrap_file = (self.bin_dirs[bin_n] / str(iteration) / f"{self.config_template.stem}_{bin_n}::bootstrap.txt").resolve()
+        bootstrap_file = (self.bin_dirs[bin_n] / str(iteration) / f"{self.config_template.stem}_{bin_n}_bootstrap::fit_results.txt").resolve()
         return fit_file, bootstrap_file
 
     def get_fit_files(self, bin_n, iteration):
         fit_files = sorted(list((self.bin_dirs[bin_n] / str(iteration)).resolve().glob(f"{self.config_template.stem}_{bin_n}*.fit")), key=os.path.getmtime)
-        bootstrap_files = sorted(list((self.bin_dirs[bin_n] / str(iteration)).resolve().glob(f"{self.config_template.stem}_{bin_n}*.bootstrap")), key=os.path.getmtime)
+        bootstrap_files = sorted(list((self.bin_dirs[bin_n] / str(iteration)).resolve().glob(f"{self.config_template.stem}_{bin_n}_bootstrap*.fit")), key=os.path.getmtime)
         return fit_files, bootstrap_files
 
     def is_fit(self, bin_n, iteration):
@@ -324,7 +324,7 @@ class Dispatcher(ABC):
         headers.append("total_AC_INT_err")
         headers.append("likelihood")
         if self.bootstrap:
-            output_file_name = self.config_template.stem + "::bootstrap.txt"
+            output_file_name = self.config_template.stem + "_bootstrap::fit_results.txt"
         else:
             output_file_name = self.config_template.stem + "::fit_results.txt"
         with open(self.root_directory / output_file_name, 'w') as out_file:

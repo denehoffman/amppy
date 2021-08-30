@@ -34,7 +34,9 @@ setup(
         'enlighten',
         'simple_term_menu',
         'colorama',
-        'pandas'
+        'pandas',
+        'halo',
+        'matplotlib'
     ],
     zip_safe=False
 )

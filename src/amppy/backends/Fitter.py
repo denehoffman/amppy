@@ -170,14 +170,9 @@ class Fitter():
             status = "UNKNOWN"
             convergence = "U"
         fit_output_source = Path(self.reaction + ".fit").resolve()
-        if self.bootstrap:
-            fit_output_destination = Path(self.config_template.stem +
-                                          "::" + fit_output_source.stem +
-                                          f"::{status}.bootstrap").resolve()
-        else:
-            fit_output_destination = Path(self.config_template.stem +
-                                          "::" + fit_output_source.stem +
-                                          f"::{status}.fit").resolve()
+        fit_output_destination = Path(self.config_template.stem +
+                                      "::" + fit_output_source.stem +
+                                      f"::{status}.fit").resolve()
         fit_output_source.replace(fit_output_destination)
         amplitudes = []
         polarizations = []
@@ -216,10 +211,7 @@ class Fitter():
         data_output_list.extend(wrapper.total_intensity(False))
         data_output_list.extend(wrapper.total_intensity(True))
         data_output_list.append(wrapper.likelihood())
-        if self.bootstrap:
-            output_file_name = self.config_template.stem + "::bootstrap.txt"
-        else:
-            output_file_name = self.config_template.stem + "::fit_results.txt"
+        output_file_name = self.config_template.stem + "::fit_results.txt"
         with open(output_file_name, 'w') as out_file:
             if convergence == 'C' or convergence == 'L':
                 output = "\t".join([str(itm) for itm in data_output_list])

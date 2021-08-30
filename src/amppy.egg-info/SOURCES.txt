@@ -18,6 +18,15 @@ src/amppy/dividers/__init__.py
 src/amppy/fitresults/FitResults.cpp
 src/amppy/fitresults/PyFitResults.py
 src/amppy/fitresults/__init__.py
+src/amppy/generators/Generator.py
+src/amppy/generators/Generator_Zlm.py
+src/amppy/generators/__init__.py
+src/amppy/plotting/Plotter.py
+src/amppy/plotting/Plotter_Bootstrap.py
+src/amppy/plotting/Plotter_Intensity.py
+src/amppy/plotting/Plotter_Phase.py
+src/amppy/plotting/Plotter_Statistics.py
+src/amppy/plotting/__init__.py
 src/amppy/scripts/amppy
 src/amppy/scripts/amppy_fit.py
 src/amppy/scripts/sbatch_job.csh
