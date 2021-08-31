@@ -8,7 +8,7 @@
 ## Install
 Download a wheel binary for Linux at the [releases page](https://github.com/denehoffman/amppy/releases)
 ```shell
-$ pip3 install amppy-0.0.1-cp36-cp36m-linux_x86_64.whl
+$ pip3 install amppy-0.0.2-cp36-cp36m-linux_x86_64.whl
 ```
 
 ## Usage
