@@ -220,7 +220,7 @@ class Divider(ABC):
         pass
 
     
-    def divide(self, low, high, nbins=20, root, config, data, gen, acc, bkg=None, variable_name='mass', **kwargs):
+    def divide(self, low, high, nbins, root, config, data, gen, acc, bkg=None, variable_name='mass', **kwargs):
         self.preprocessing(**kwargs)
         self.n_bins = nbins 
         self.low_high_tuple = (low, high)
