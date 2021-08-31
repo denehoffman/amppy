@@ -50,21 +50,28 @@ from amppy.plotting.Plotter_Intensity import Plotter_Intensity
 import matplotlib.backends.backend_pdf as backend_pdf
 
 div = Divider_split_mass()
-div.divide(1.0, 1.8 # mass range in GeV
-           20, # 20 bins
-           "~/my_pwa", # output directory
-           "~/etapi_D_waves.cfg", # AmpTools config
-           "~/data/", "~/thrownMC/", "~/acceptedMC/", "~/background/") # locations of ROOT flat trees for AmpTools
+div.divide(low=1.0, high=1.8 # mass range in GeV
+           nbins=20, # 20 bins
+           root="~/my_pwa", # output directory
+           config="~/etapi_D_waves.cfg", # AmpTools config
+           data="~/data/", gen="~/thrownMC/", acc="~/acceptedMC/", bkg=None) # locations of ROOT flat trees for AmpTools
 disp = PythonMultiprocessing()
-disp.setup("~/my_pwa", "~/etapi_D_waves.cfg",
-           100, # run 100 iterations for each bin (2000 fits total)
-           1927428, # set a seed
-           False, # can't bootstrap on the first fit
-           1) # verbosity (show standard loading bar)
+disp.setup(root="~/my_pwa", config="~/etapi_D_waves.cfg",
+           iterations=100, # run 100 iterations for each bin (2000 fits total)
+           seed=1927428, # set a seed
+           bootstrap=False, # can't bootstrap on the first fit
+           verbosity=1) # verbosity (show standard loading bar)
 disp.dispatch(processes=15)
-output_file = backend_pdf.PdfPages("~/plots.pdf")
-plotter = Plotter_Intensity(output_file, "~/etapi_D_waves.cfg")
-plotter.plot({"acceptance_corrected": True, "xlabel_invmass": f"m($\eta\pi_0$) GeV/$c^2$"})
+plotter = Plotter_Intensity(config="~/etapi_D_waves.cfg",
+                            pdf=None) # optionally, you can supply a path
+plotter.plot({"acceptance_corrected": True,
+              "xlabel_invmass": f"m($\eta\pi_0$) GeV/$c^2$"})
+print(f"Output saved to {str(plotter.pdf_path)}")
+```
+```shell
+$ python3 example.py
+...
+Output saved to ~/my_pwa/eta_pi_D_waves_plots.pdf
 ```
 
 ## TODO
