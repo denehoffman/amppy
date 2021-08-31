@@ -8,11 +8,11 @@ from halo import Halo
 
 class Plotter(ABC):
 
-    def __init__(self, pdf, config_template):
+    def __init__(self, config, pdf=None):
         self.xlabel = ""
         self.ylabel = "" 
         self.title = ""
-        self.config_template = Path(config_template).resolve()
+        self.config_template = Path(config).resolve()
         self.fit_results = self.config_template.parent / (self.config_template.stem + "::fit_results.txt")
         self.bin_info = self.config_template.parent / 'bin_info.txt'
         self.bootstrap = self.config_template.parent / (self.config_template.stem + "_bootstrap::fit_results.txt")
@@ -51,7 +51,14 @@ class Plotter(ABC):
         self.pos_amplitudes = [amp for amp in self.amplitudes if amp.endswith('+')]
         self.neg_amplitudes = [amp for amp in self.amplitudes if amp.endswith('-')]
         self.spinner = Halo(text='Plotting', spinner='dots')
-        self.pdf = pdf
+        if pdf is None:
+            self.pdf_path = Path(config).resolve().parent / (Path(config).resolve().stem + "_plots.pdf")
+            self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
+        else:
+            if not pdf.endswith(".pdf"):
+                pdf += ".pdf"
+            self.pdf_path = Path(pdf).resolve()
+            self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
     
     @staticmethod
     def get_label_from_amplitude(amp_string, refl=False):

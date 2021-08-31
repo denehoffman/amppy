@@ -250,9 +250,9 @@ class Dispatcher(ABC):
     def postprocessing(self, **kwargs):
         pass
 
-    def setup(self, root_directory: str, config_template: str, iterations: int, seed: int, bootstrap: bool, verbosity: int):
-        self.root_directory = Path(root_directory).resolve()
-        self.config_template = Path(config_template).resolve()
+    def setup(self, root: str, config: str, iterations=10, seed=1, bootstrap=False, verbosity=1):
+        self.root_directory = Path(root).resolve()
+        self.config_template = Path(config).resolve()
         self.iterations = iterations
         self.seed = seed
         self.bootstrap = bootstrap

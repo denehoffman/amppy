@@ -84,15 +84,15 @@ See 'amppy <command> --help' to read about a specific subcommand''')
             parser.print_help()
             sys.exit(1)
         args = parser.parse_args(sys.argv[2:])
-        Divider_split_mass().divide(args.low,
-                                    args.high,
-                                    args.nbins,
-                                    args.output,
-                                    args.config,
-                                    args.data,
-                                    args.generated,
-                                    args.accepted,
-                                    args.background,
+        Divider_split_mass().divide(low=args.low,
+                                    high=args.high,
+                                    nbins=args.nbins,
+                                    root=args.output,
+                                    config=args.config,
+                                    data=args.data,
+                                    gen=args.generated,
+                                    acc=args.accepted,
+                                    bkg=args.background,
                                     data_tree=args.data_tree,
                                     generated_tree=args.generated_tree,
                                     accepted_tree=args.accepted_tree,
@@ -109,7 +109,8 @@ See 'amppy <command> --help' to read about a specific subcommand''')
             sys.exit(1)
         args = parser.parse_args(sys.argv[2:])
         if get_divider_type_string(args.output) == "mass":
-            Divider_split_mass().add_config(args.output, args.config)
+            Divider_split_mass().add_config(root=args.output,
+                                            config=args.config)
         else:
             print("Error in locating bin_info.txt")
 
@@ -147,7 +148,12 @@ Possible dispatchers include:''')
                 args = parser.parse_args(sys.argv[3:])
                 config = str(config_menu(Path(args.directory).resolve()))
                 d = backends.dispatchers[i_dispatcher]()
-                d.setup(args.directory, config, args.i, args.s, False, args.v)
+                d.setup(root=args.directory,
+                        config=config,
+                        iterations=args.i,
+                        seed=args.s,
+                        bootstrap=False,
+                        verbosity=args.v)
                 if args.rerun:
                     d.remove_fits()
                 d.dispatch(**vars(args))
@@ -190,7 +196,12 @@ Possible dispatchers include:''')
                 args = parser.parse_args(sys.argv[3:])
                 config = str(config_menu(Path(args.directory).resolve()))
                 d = backends.dispatchers[i_dispatcher]()
-                d.setup(args.directory, config, args.i, args.s, True, args.v)
+                d.setup(root=args.directory,
+                        config=config, 
+                        iterations=args.i,
+                        seed=args.s,
+                        bootstrap=True,
+                        verbosity=args.v)
                 if args.rerun:
                     d.remove_fits()
                 d.dispatch(**vars(args))
@@ -209,12 +220,6 @@ Possible dispatchers include:''')
             sys.exit(1)
         args = parser.parse_args(sys.argv[2:])
         config = str(config_menu(Path(args.directory).resolve(), fit=True))
-        if args.output is None:
-            pdf_path = Path(config).resolve().parent / (Path(config).resolve().stem + "_plots.pdf")
-        else:
-            if not args.output.endswith(".pdf"):
-                args.output += ".pdf"
-            pdf_path = Path(args.output).resolve()
         plotter_list = [name + (40 - len(name)) * " " + desc for name, desc in plotting.plotter_descriptions] + ["Cancel"]
         plot_menu = TerminalMenu(menu_entries=plotter_list,
                                 title="Select plotters",
@@ -226,16 +231,19 @@ Possible dispatchers include:''')
                                 show_multi_select_hint=True)
         sels = plot_menu.show()
         if plotter_list[sels[-1]] != "Cancel":
-            output_pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
             kwargs = {}
             plotter_objs = []
+            pdf_path = None
             for sel in sels:
-                plotter = plotting.plotters[sel](output_pdf, config)
-                kwargs = plotter.configure(kwargs)
+                plotter = plotting.plotters[sel](config=config,
+                                                 pdf=args.output)
+                kwdict = plotter.configure(kwdict)
                 plotter_objs.append(plotter)
+                pdf_path = plotter.pdf_path
             for plotter in plotter_objs:
                 plotter.plot(kwargs)
             output_pdf.close()
+            print(f"Output saved to {str(pdf_path)}")
         
 
 

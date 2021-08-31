@@ -17,7 +17,7 @@ amptools_extension = Extension(
 
 setup(
     name="amppy",
-    version="0.0.1",
+    version="0.0.2",
     author="Nathaniel Dene Hoffman",
     author_email="dene@cmu.edu",
     ext_modules=cythonize(amptools_extension),

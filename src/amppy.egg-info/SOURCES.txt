@@ -1,4 +1,4 @@
-README
+README.md
 setup.py
 src/amppy/__init__.py
 src/amppy.egg-info/PKG-INFO
