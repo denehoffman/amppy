@@ -8,7 +8,17 @@
 ## Install
 Download a wheel binary for Linux at the [releases page](https://github.com/denehoffman/amppy/releases)
 ```shell
-$ pip3 install amppy-0.0.1-cp36-cp36m-linux_x86_64.whl
+$ pip3 install amppy-0.0.2-cp36-cp36m-linux_x86_64.whl
+```
+While you can install AmpPy into your local python path (or use the --user tag if you don't have root permission), the recommended installation is into an isolated virtual environment to avoid dependency conflicts between other programs:
+```shell
+$ python3 -m venv my-amppy-venv # or whatever name you want to give it
+$ source my-amppy-venv/bin/activate.csh # activation scripts for bash and fish are also located here
+[my-amppy-venv] $ pip install amppy-0.0.2-cp36-cp36m-linux_x86_64.whl
+[my-amppy-venv] $ source my-amppy-venv/bin/activate.csh # on the first installation, this needs to be sourced again to include the proper paths for AmpPy's scripts
+[my-amppy-venv] $ ... # do your analysis
+[my-amppy-venv] $ deactivate
+$ ... # now that we're back out of the virtual environment, you won't have access to AmpPy commands or libraries
 ```
 
 ## Usage
