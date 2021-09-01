@@ -122,9 +122,9 @@ class Generator_Zlm(Generator):
     def write_paths(self):
         lines = ['\n# Paths']
         lines.append(f"normintfile {self.reaction} LOOPNIFILE")
-        lines.append(f"data {self.reaction} LOOPDATA")
-        lines.append(f"genmc {self.reaction} LOOPGEN")
-        lines.append(f"accmc {self.reaction} LOOPACC")
+        lines.append(f"data {self.reaction} ROOTDataReader LOOPDATA")
+        lines.append(f"genmc {self.reaction} ROOTDataReader LOOPGEN")
+        lines.append(f"accmc {self.reaction} ROOTDataReader LOOPACC")
         if 'BKG' in self.file_types:
             lines.append(f"bkgnd {self.reaction} LOOPBKG")
         return '\n'.join(lines)
