@@ -8,7 +8,7 @@ import os
 from itertools import combinations
 import pandas as pd
 from colorama import Fore, Style, init
-init()
+from halo import Halo
 
 class FitStatus(Enum):
     FAILED = 0
@@ -190,11 +190,11 @@ class Dispatcher(ABC):
         return fit_files, bootstrap_files
 
     def is_fit(self, bin_n, iteration):
-        fit_file, bootstrap_file = self.get_fit_results_files(bin_n, iteration)
+        fit_files, bootstrap_files = self.get_fit_files(bin_n, iteration)
         if self.bootstrap:
-            return bootstrap_file.exists()
+            return bool(bootstrap_files)
         else:
-            return fit_file.exists()
+            return bool(fit_files)
 
 
     def remove_fit(self, bin_n, iteration):
@@ -283,6 +283,7 @@ class Dispatcher(ABC):
                 fit_status = self.get_fit_status(bin_n, iteration)
                 if fit_status != FitStatus.NO_FIT:
                     active_jobs[bin_n][iteration] = False
+                    print(f"Bin {bin_n} iteration {iteration} fit: {fit_status} ({self.config_template.stem})")
                     if self.bin_counters != None:
                         self.bin_counters[bin_n].update(fit_status)
                     if self.total_counter != None:
@@ -332,6 +333,8 @@ class Dispatcher(ABC):
             out_file.write(f"Bin\tIteration\tConvergence\t{header}\n")
             bin_converged_total = np.zeros_like(self.bin_dirs)
             bin_total = np.ones_like(self.bin_dirs) * self.iterations
+            spinner = Halo(text='Gathering Results', spinner='dots')
+            spinner.start()
             for bin_n in range(self.n_bins):
                 for iteration in range(self.iterations):
                     fit_results, bootstrap_results = self.get_fit_results_files(bin_n, iteration)
@@ -346,6 +349,7 @@ class Dispatcher(ABC):
                                 out_file.write(line)
                         if converged == "C":
                             bin_converged_total[bin_n] += 1
+            spinner.succeed()
         print("Convergence Results:")
         for bin_n in range(self.n_bins):
             percent_converged = bin_converged_total[bin_n] / bin_total[bin_n]
@@ -395,6 +399,7 @@ class Dispatcher(ABC):
             self.create_counters()
             counters = threading.Thread(target=update_counter_thread, args=(self,))
             counters.start()
+            print(f"Submitting Jobs for config: {self.config_template.stem}")
             self.submit_jobs()
             self.postprocessing(**kwargs)
             counters.join()

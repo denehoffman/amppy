@@ -1,8 +1,0 @@
-numpy
-cython
-enlighten
-simple_term_menu
-colorama
-pandas
-halo
-matplotlib

@@ -231,7 +231,7 @@ Possible dispatchers include:''')
                                 show_multi_select_hint=True)
         sels = plot_menu.show()
         if plotter_list[sels[-1]] != "Cancel":
-            kwargs = {}
+            kwdict = {}
             plotter_objs = []
             pdf_path = None
             for sel in sels:
@@ -239,11 +239,10 @@ Possible dispatchers include:''')
                                                  pdf=args.output)
                 kwdict = plotter.configure(kwdict)
                 plotter_objs.append(plotter)
-                pdf_path = plotter.pdf_path
             for plotter in plotter_objs:
-                plotter.plot(kwargs)
-            output_pdf.close()
-            print(f"Output saved to {str(pdf_path)}")
+                plotter.plot(kwdict)
+            plotting.Plotter.pdf.close()
+            print(f"Output saved to {str(plotting.Plotter.pdf_path)}")
         
 
 

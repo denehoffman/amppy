@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from colorama import Fore, Style, init
-init()
 
 class Generator(ABC):
 
@@ -46,23 +45,11 @@ class Generator(ABC):
         pass
 
     def preview(self):
-        print(Style.BRIGHT)
-        print(Fore.BLUE)
-        print(self.write_other())
-        print(Fore.GREEN)
-        print(self.write_constants())
-        print(self.write_parameters())
-        print(Fore.YELLOW)
-        print(self.write_loops())
-        print(self.write_paths())
-        print(self.write_sums())
-        print(Fore.MAGENTA)
-        print(self.write_amplitudes())
-        print(Fore.CYAN)
-        print(self.write_initialization())
-        print(self.write_constraints())
-        print(self.write_scales())
-        print(Style.RESET_ALL)
+        print(f"{Fore.BLUE}{self.write_other()}")
+        print(f"{Fore.GREEN}{self.write_constants()}\n{self.write_parameters()}")
+        print(f"{Fore.YELLOW}{self.write_loops()}\n{self.write_paths()}\n{self.write_sums()}")
+        print(f"{Fore.MAGENTA}{self.write_amplitudes()}")
+        print(f"{Fore.CYAN}{self.write_initialization()}\n{self.write_constraints()}\n{self.write_scales()}{Style.RESET_ALL}")
         input("Press <enter> to continue")
 
 

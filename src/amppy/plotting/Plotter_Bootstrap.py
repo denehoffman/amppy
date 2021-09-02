@@ -24,7 +24,7 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         if wave + "+" in self.amplitudes:
             amp = wave + "+"
-            plt.errorbar(self.best_fit_bin_centers,
+            plt.errorbar(self.best_fit_df['Center'],
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
@@ -33,20 +33,20 @@ class Plotter_Bootstrap(Plotter):
                             label=f"$+\epsilon$")
         if wave + "-" in self.amplitudes:
             amp = wave + "-"
-            plt.errorbar(self.best_fit_bin_centers,
+            plt.errorbar(self.best_fit_df['Center'],
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
                             fmt='o',
                             color='k',
                             label=f"$-\epsilon$")
-        plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.errorbar(self.best_fit_df['Center'],
                         self.best_fit_df['total' + tag],
                         yerr=self.best_fit_df['total' + err_tag],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.best_fit_bin_centers,
+        plt.hist(self.best_fit_df['Center'],
                     bins=len(self.bin_info_df),
                     range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],
@@ -70,20 +70,20 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:brown", "tab:pink", "tab:olive", "tab:cyan"]
         for i, amp in enumerate(amps):
-            plt.errorbar(self.best_fit_bin_centers,
+            plt.errorbar(self.best_fit_df['Center'],
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
                             fmt='o',
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
-        plt.errorbar(self.best_fit_bin_centers,
+        plt.errorbar(self.best_fit_df['Center'],
                         self.best_fit_df['total' + tag],
                         yerr=self.best_fit_df['total' + err_tag],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.best_fit_bin_centers,
+        plt.hist(self.best_fit_df['Center'],
                     bins=len(self.bin_info_df),
                     range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],
@@ -146,7 +146,7 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:brown", "tab:pink", "tab:olive", "tab:cyan"]
         for i, amp in enumerate(self.pos_amplitudes):
-            plt.errorbar(self.best_fit_bin_centers,
+            plt.errorbar(self.best_fit_df['Center'],
                             self.best_fit_df[amp + tag + "_bootstrap"],
                             yerr=self.best_fit_df[amp + err_tag + "_bootstrap"],
                             elinewidth=0.5,
@@ -154,20 +154,20 @@ class Plotter_Bootstrap(Plotter):
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
         for i, amp in enumerate(self.neg_amplitudes):
-            plt.errorbar(self.best_fit_bin_centers,
+            plt.errorbar(self.best_fit_df['Center'],
                             self.best_fit_df[amp + tag + "_bootstrap"],
                             yerr=self.best_fit_df[amp + err_tag + "_bootstrap"],
                             elinewidth=0.5,
                             fmt='s',
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
-        plt.errorbar(self.best_fit_bin_centers,
+        plt.errorbar(self.best_fit_df['Center'],
                         self.best_fit_df['total' + tag + "_bootstrap"],
                         yerr=self.best_fit_df['total' + err_tag + "_bootstrap"],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.best_fit_bin_centers,
+        plt.hist(self.best_fit_df['Center'],
                     bins=len(self.bin_info_df),
                     range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag + "_bootstrap"],

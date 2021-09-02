@@ -23,18 +23,18 @@ class Plotter_Statistics(Plotter):
 
     def plot_violin(self, amp, tag, title, ylabel):
         fig = plt.figure()
-        plt.scatter(self.best_fit_bin_centers,
+        plt.scatter(self.fit_df['Center'],
                     self.fit_df[amp + tag],
                     marker='.',
                     color='k',
                     label="Fit Minima")
         plt.violinplot([df[amp + tag] for df in self.fits_in_bin],
-                        self.best_fit_bin_centers,
-                        widths=self.bin_width,
-                        showmeans=True,
-                        showextrema=True,
-                        showmedians=True)
-        plt.scatter(self.best_fit_bin_centers,
+                       self.best_fit_df['Center'],
+                       widths=self.bin_width,
+                       showmeans=True,
+                       showextrema=True,
+                       showmedians=True)
+        plt.scatter(self.best_fit_df['Center'],
                     self.best_fit_df[amp + tag],
                     marker='o',
                     color='r',
@@ -75,7 +75,5 @@ class Plotter_Statistics(Plotter):
         self.plot_violin("likelihood", "", "Log(Likelihood)", "Log(Likelihood)")
         self.spinner.succeed("Plotted likelihood!")
         self.spinner.start("Generating plot of likelihood normalized by total intensity")
-        self.fit_df['nlikelihood'] = self.fit_df['likelihood'].to_numpy() / self.fit_df['total' + tag].to_numpy()
-        self.best_fit_df['nlikelihood'] = self.best_fit_df['likelihood'].to_numpy() / self.best_fit_df['total' + tag].to_numpy()
         self.plot_violin("nlikelihood", "", "Log(Likelihood)/Total Intensity", "Log(Likelihood)/Total Intensity")
         self.spinner.succeed("Plotted normalized likelihood!")

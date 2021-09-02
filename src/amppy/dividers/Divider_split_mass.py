@@ -34,7 +34,7 @@ class Divider_split_mass(Divider):
                             config_text = config_text.replace("@DATAFILE" + tag_pol,
                                                               "../" + f.name)
                             config_text = config_text.replace("@NIFILE" + tag_pol,
-                                                              self.config_template.stem + "NIFILE" + tag_pol)
+                                                              self.config_template.stem + "_NIFILE" + tag_pol)
                     for f in bkg_files:
                         if file_pol in f.name:
                             config_text = config_text.replace("@BKGFILE" + tag_pol,

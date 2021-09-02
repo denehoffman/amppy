@@ -69,7 +69,7 @@ class Generator_Zlm(Generator):
         self.amplitudes = set()
         self.polarizations = ['PARA 0', 'PERP 45', 'PERP 90', 'PARA 135', 'AMO']
         self.reaction = 'default'
-        self.file_types = ['DATA', 'ACC', 'GEN', 'NIFILE']
+        self.file_types = ['DATAFILE', 'ACCFILE', 'GENFILE', 'NIFILE']
         self.coordinates = 'polar'
         self.particles = ['gamma', 'proton', 'p1', 'p2']
 
@@ -122,11 +122,11 @@ class Generator_Zlm(Generator):
     def write_paths(self):
         lines = ['\n# Paths']
         lines.append(f"normintfile {self.reaction} LOOPNIFILE")
-        lines.append(f"data {self.reaction} ROOTDataReader LOOPDATA")
-        lines.append(f"genmc {self.reaction} ROOTDataReader LOOPGEN")
-        lines.append(f"accmc {self.reaction} ROOTDataReader LOOPACC")
-        if 'BKG' in self.file_types:
-            lines.append(f"bkgnd {self.reaction} LOOPBKG")
+        lines.append(f"data {self.reaction} ROOTDataReader LOOPDATAFILE")
+        lines.append(f"genmc {self.reaction} ROOTDataReader LOOPGENFILE")
+        lines.append(f"accmc {self.reaction} ROOTDataReader LOOPACCFILE")
+        if 'BKGFILE' in self.file_types:
+            lines.append(f"bkgnd {self.reaction} LOOPBKGFILE")
         return '\n'.join(lines)
 
 
@@ -202,7 +202,7 @@ class Generator_Zlm(Generator):
                  '# to replace placeholder content like file paths, seeds, #',
                  '# and initializations                                    #',
                  '##########################################################\n']
-        lines.append("fit @filename")
+        lines.append("fit {self.reaction}")
         lines.append(f"reaction {self.reaction} {' '.join(self.particles)}")
         return '\n'.join(lines)
 
@@ -239,7 +239,7 @@ class Generator_Zlm(Generator):
         print(redge + pol_content + " " * (wave_len - len(pol_content)) + ledge)
         coordinate_content = "Coordinate System: " + ('polar' if self.coordinates == 'polar' else 'cartesian')
         print(redge + coordinate_content + " " * (wave_len - len(coordinate_content)) + ledge)
-        background_content = "Use Background ROOT Files: " + ('yes' if 'BKG' in self.file_types else 'no')
+        background_content = "Use Background ROOT Files: " + ('yes' if 'BKGFILE' in self.file_types else 'no')
         print(redge + background_content + " " * (wave_len - len(background_content)) + ledge)
         particles_content = f"Particle Names: {' '.join(self.particles)}"
         print(redge + particles_content + " " * (wave_len - len(particles_content)) + ledge)
@@ -291,10 +291,10 @@ class Generator_Zlm(Generator):
             else:
                 self.coordinates = 'polar'
         elif items[sel] == "Toggle Background":
-            if 'BKG' in self.file_types:
-                self.file_types.remove('BKG')
+            if 'BKGFILE' in self.file_types:
+                self.file_types.remove('BKGFILE')
             else:
-                self.file_types.append('BKG')
+                self.file_types.append('BKGFILE')
         elif items[sel] == "Edit Particle Names":
             clear()
             print("Enter particle names separated by a space")

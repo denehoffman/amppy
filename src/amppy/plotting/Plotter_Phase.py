@@ -34,20 +34,20 @@ class Plotter_Phase(Plotter):
         for phase in self.phases:
             fig, ax = plt.subplots()
             ax2 = ax.twinx()
-            ax2.errorbar(self.best_fit_bin_centers,
+            ax2.errorbar(self.best_fit_df['Center'],
                          self.best_fit_df[phase + "_PHASE"],
                          yerr=self.best_fit_df[phase + "_PHASE_err"],
                          elinewidth=0.5,
                          fmt='o',
                          color='m',
                          label="Phase Difference")
-            ax.errorbar(self.best_fit_bin_centers,
+            ax.errorbar(self.best_fit_df['Center'],
                         self.best_fit_df['total' + tag],
                         yerr=self.best_fit_df['total' + err_tag],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-            ax.hist(self.best_fit_bin_centers,
+            ax.hist(self.best_fit_df['Center'],
                     bins=len(self.bin_info_df),
                     range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],

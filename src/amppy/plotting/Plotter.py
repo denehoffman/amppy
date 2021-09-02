@@ -8,6 +8,8 @@ import numpy as np
 from halo import Halo
 
 class Plotter(ABC):
+    pdf = None
+    pdf_path = None
 
     def __init__(self, config, pdf=None):
         self.xlabel = ""
@@ -26,6 +28,7 @@ class Plotter(ABC):
         amp_agg = {col: [np.real, np.imag] for col in amp_typing}
         amp_names = [col + tag for col in amp_typing for tag in ["_re", "_im"]]
         self.fit_df[amp_names] = self.fit_df.agg(amp_agg)
+        self.fit_df['nlikelihood'] = self.fit_df['likelihood'].to_numpy() / self.fit_df['total_AC_INT'].to_numpy()
         ### Best Fit DataFrame
         self.best_fit_df = self.fit_df.loc[self.fit_df.groupby(['Bin'])['likelihood'].idxmax()]
         ### Bin Info DataFrame (columns = "bin=#,#" and "mass"/"t" etc)
@@ -35,11 +38,12 @@ class Plotter(ABC):
         bin_edge_low, bin_edge_high = [float(val) for val in self.bin_info_df.columns.to_list()[0].split('=')[1].split(',')]
         self.nbins = len(self.bin_info_df) # number of bins
         self.bin_centers = self.bin_info_df[self.bin_type].to_list() # values of bin centers
-        self.best_fit_bin_centers = self.bin_info_df[self.bin_type].iloc[self.best_fit_df['Bins']] # values of best fit bin centers
-        self.is_bin_fit = [bin_n in self.bin_info_df['Bin'] for bin_n in range(self.nbins)] # bool array, true if a fit converged
+        self.fit_df['Center'] = self.bin_info_df[self.bin_type].iloc[self.fit_df['Bin']].to_list()
+        self.best_fit_df['Center'] = self.bin_info_df[self.bin_type].iloc[self.best_fit_df['Bin']].to_list()
+        self.bin_info_df['Fit'] = [bin_n in self.best_fit_df['Bin'] for bin_n in range(self.nbins)] # bool array, true if a fit converged
         self.bin_width = (bin_edge_high - bin_edge_low) / self.nbins # bin width
         self.bin_edges = [bin_edge_low + n * self.bin_width for n in range(self.nbins + 1)] # bin edges (len = nbins+1)
-        self.bin_labels = [f"({low_edge} - {high_edge}) {self.bin_unit}" for low_edge, high_edge in zip(self.bin_edges[:-1], self.bin_edges[1:])]
+        self.bin_info_df['Label'] = [f"({round(low_edge, 3)} - {round(high_edge, 3)}) {self.bin_unit}" for low_edge, high_edge in zip(self.bin_edges[:-1], self.bin_edges[1:])]
         ### list whose n-th element is a DataFrame with all converged fits in the n-th bin
         self.fits_in_bin = [self.fit_df.loc[self.fit_df['Bin'] == bin_num] for bin_num in range(self.nbins)]
         self.bootstrap_df = None
@@ -51,6 +55,7 @@ class Plotter(ABC):
             amp_agg = {col: [np.real, np.imag] for col in amp_typing}
             amp_names = [col + tag for col in amp_typing for tag in ["_re", "_im"]]
             self.bootstrap_df[amp_names] = self.bootstrap_df.agg(amp_agg)
+            self.bootstrap_df['Center'] = self.bin_info_df[self.bin_type].iloc[self.bootstrap_df['Bin']].to_list()
             self.bootstrapped = True
         wave_letters = ['S', 'P', 'D', 'F', 'G']
         amp_score = lambda wave: 100 * wave_letters.index(wave[0]) + (-10 if wave[-2] == '-' else 10) * int(wave[1]) + (-1 if wave[-1] == '-' else 1)
@@ -73,13 +78,25 @@ class Plotter(ABC):
         self.neg_amplitudes = [amp for amp in self.amplitudes if amp.endswith('-')]
         self.spinner = Halo(text='Plotting', spinner='dots')
         if pdf is None:
-            self.pdf_path = Path(config).resolve().parent / (Path(config).resolve().stem + "_plots.pdf")
-            self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
+            if Plotter.pdf is None:
+                self.pdf_path = Path(config).resolve().parent / (Path(config).resolve().stem + "_plots.pdf")
+                self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(self.pdf_path))
+                Plotter.pdf = self.pdf
+                Plotter.pdf_path = self.pdf_path
+            else:
+                self.pdf_path = Plotter.pdf_path
+                self.pdf = Plotter.pdf
         else:
-            if not pdf.endswith(".pdf"):
-                pdf += ".pdf"
-            self.pdf_path = Path(pdf).resolve()
-            self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(pdf_path))
+            if Plotter.pdf is None:
+                if not pdf.endswith(".pdf"):
+                    pdf += ".pdf"
+                self.pdf_path = Path(pdf).resolve()
+                self.pdf = matplotlib.backends.backend_pdf.PdfPages(str(self.pdf_path))
+                Plotter.pdf = self.pdf
+                Plotter.pdf_path = self.pdf_path
+            else:
+                self.pdf_path = Plotter.pdf_path
+                self.pdf = Plotter.pdf
     
     @staticmethod
     def get_label_from_amplitude(amp_string, refl=False):
