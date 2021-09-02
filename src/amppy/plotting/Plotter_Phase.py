@@ -34,23 +34,22 @@ class Plotter_Phase(Plotter):
         for phase in self.phases:
             fig, ax = plt.subplots()
             ax2 = ax.twinx()
-            ax2.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            ax2.errorbar(self.best_fit_bin_centers,
                          self.best_fit_df[phase + "_PHASE"],
                          yerr=self.best_fit_df[phase + "_PHASE_err"],
                          elinewidth=0.5,
                          fmt='o',
                          color='m',
                          label="Phase Difference")
-            ax.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            ax.errorbar(self.best_fit_bin_centers,
                         self.best_fit_df['total' + tag],
                         yerr=self.best_fit_df['total' + err_tag],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-            ax.hist(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            ax.hist(self.best_fit_bin_centers,
                     bins=len(self.bin_info_df),
-                    range=(self.bin_info_df[self.bin_type].iloc[0],
-                           self.bin_info_df[self.bin_type].iloc[-1]),
+                    range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],
                     fill=False,
                     histtype='step',
@@ -58,10 +57,9 @@ class Plotter_Phase(Plotter):
                     label="Total")
             plt.title(f"Phase Difference {phase}")
             plt.ylim(bottom=0)
-            span = self.bin_info_df['Centers'].iloc[-1] - self.bin_info_df['Centers'].iloc[0]
+            span = self.bin_edges[-1] - self.bin_edges[0]
             buf = span * 0.13
-            ax.set_xlim(self.bin_info_df['Centers'].iloc[0] - buf,
-                        self.bin_info_df['Centers'].iloc[-1] + buf)
+            plt.xlim(self.bin_edges[0] - buf, self.bin_edges[-1] + buf)
             ax.set_ylabel("Intensity")
             ax.set_ylim(bottom=0)
             ax2.set_ylabel("Phase")

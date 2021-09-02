@@ -24,7 +24,7 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         if wave + "+" in self.amplitudes:
             amp = wave + "+"
-            plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            plt.errorbar(self.best_fit_bin_centers,
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
@@ -33,7 +33,7 @@ class Plotter_Bootstrap(Plotter):
                             label=f"$+\epsilon$")
         if wave + "-" in self.amplitudes:
             amp = wave + "-"
-            plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            plt.errorbar(self.best_fit_bin_centers,
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
@@ -46,10 +46,9 @@ class Plotter_Bootstrap(Plotter):
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.hist(self.best_fit_bin_centers,
                     bins=len(self.bin_info_df),
-                    range=(self.bin_info_df[self.bin_type].iloc[0],
-                        self.bin_info_df[self.bin_type].iloc[-1]),
+                    range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],
                     fill=False,
                     histtype='step',
@@ -57,10 +56,9 @@ class Plotter_Bootstrap(Plotter):
                     label="Total")
         plt.title(Plotter.get_label_from_amplitude(amp) + " (Bootstrapped)")
         plt.ylim(bottom=0)
-        span = self.bin_info_df['Centers'].iloc[-1] - self.bin_info_df['Centers'].iloc[0]
+        span = self.bin_edges[-1] - self.bin_edges[0]
         buf = span * 0.13
-        plt.xlim(self.bin_info_df['Centers'].iloc[0] - buf,
-                    self.bin_info_df['Centers'].iloc[-1] + buf)
+        plt.xlim(self.bin_edges[0] - buf, self.bin_edges[-1] + buf)
         plt.ylabel("Intensity")
         plt.xlabel(self.xlabel)
         plt.legend()
@@ -72,23 +70,22 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:brown", "tab:pink", "tab:olive", "tab:cyan"]
         for i, amp in enumerate(amps):
-            plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            plt.errorbar(self.best_fit_bin_centers,
                             self.best_fit_df[amp + tag],
                             yerr=self.best_fit_df[amp + err_tag],
                             elinewidth=0.5,
                             fmt='o',
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
-        plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.errorbar(self.best_fit_bin_centers,
                         self.best_fit_df['total' + tag],
                         yerr=self.best_fit_df['total' + err_tag],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.hist(self.best_fit_bin_centers,
                     bins=len(self.bin_info_df),
-                    range=(self.bin_info_df[self.bin_type].iloc[0],
-                        self.bin_info_df[self.bin_type].iloc[-1]),
+                    range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag],
                     fill=False,
                     histtype='step',
@@ -96,10 +93,9 @@ class Plotter_Bootstrap(Plotter):
                     label="Total")
         plt.title(title + " (Bootstrapped)")
         plt.ylim(bottom=0)
-        span = self.bin_info_df['Centers'].iloc[-1] - self.bin_info_df['Centers'].iloc[0]
+        span = self.bin_edges[-1] - self.bin_edges[0]
         buf = span * 0.13
-        plt.xlim(self.bin_info_df['Centers'].iloc[0] - buf,
-                    self.bin_info_df['Centers'].iloc[-1] + buf)
+        plt.xlim(self.bin_edges[0] - buf, self.bin_edges[-1] + buf)
         plt.ylabel("Intensity")
         plt.xlabel(self.xlabel)
         plt.legend()
@@ -150,7 +146,7 @@ class Plotter_Bootstrap(Plotter):
         fig = plt.figure()
         colors = ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple", "tab:brown", "tab:pink", "tab:olive", "tab:cyan"]
         for i, amp in enumerate(self.pos_amplitudes):
-            plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            plt.errorbar(self.best_fit_bin_centers,
                             self.best_fit_df[amp + tag + "_bootstrap"],
                             yerr=self.best_fit_df[amp + err_tag + "_bootstrap"],
                             elinewidth=0.5,
@@ -158,23 +154,22 @@ class Plotter_Bootstrap(Plotter):
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
         for i, amp in enumerate(self.neg_amplitudes):
-            plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+            plt.errorbar(self.best_fit_bin_centers,
                             self.best_fit_df[amp + tag + "_bootstrap"],
                             yerr=self.best_fit_df[amp + err_tag + "_bootstrap"],
                             elinewidth=0.5,
                             fmt='s',
                             color=colors[i],
                             label=Plotter.get_label_from_amplitude(amp, refl=True))
-        plt.errorbar(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.errorbar(self.best_fit_bin_centers,
                         self.best_fit_df['total' + tag + "_bootstrap"],
                         yerr=self.best_fit_df['total' + err_tag + "_bootstrap"],
                         elinewidth=0.5,
                         fmt='none',
                         color='k')
-        plt.hist(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.hist(self.best_fit_bin_centers,
                     bins=len(self.bin_info_df),
-                    range=(self.bin_info_df[self.bin_type].iloc[0],
-                        self.bin_info_df[self.bin_type].iloc[-1]),
+                    range=(self.bin_edges[0], self.bin_edges[-1]),
                     weights=self.best_fit_df['total' + tag + "_bootstrap"],
                     fill=False,
                     histtype='step',
@@ -182,10 +177,9 @@ class Plotter_Bootstrap(Plotter):
                     label="Total")
         plt.title("All Amplitudes (Bootstrapped)")
         plt.ylim(bottom=0)
-        span = self.bin_info_df['Centers'].iloc[-1] - self.bin_info_df['Centers'].iloc[0]
+        span = self.bin_edges[-1] - self.bin_edges[0]
         buf = span * 0.13
-        plt.xlim(self.bin_info_df['Centers'].iloc[0] - buf,
-                    self.bin_info_df['Centers'].iloc[-1] + buf)
+        plt.xlim(self.bin_edges[0] - buf, self.bin_edges[-1] + buf)
         plt.ylabel("Intensity")
         plt.xlabel(self.xlabel)
         plt.legend()

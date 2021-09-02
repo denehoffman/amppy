@@ -23,19 +23,18 @@ class Plotter_Statistics(Plotter):
 
     def plot_violin(self, amp, tag, title, ylabel):
         fig = plt.figure()
-        all_runs_by_bin = [self.fit_df[amp + tag].loc[self.fit_df['Bin'] == bin_num] for bin_num in self.bin_info_df['bin']]
-        plt.scatter(self.bin_info_df['Centers'].iloc[self.fit_df['Bin']],
+        plt.scatter(self.best_fit_bin_centers,
                     self.fit_df[amp + tag],
                     marker='.',
                     color='k',
                     label="Fit Minima")
-        plt.violinplot(all_runs_by_bin,
-                        self.bin_info_df['Centers'],
+        plt.violinplot([df[amp + tag] for df in self.fits_in_bin],
+                        self.best_fit_bin_centers,
                         widths=self.bin_width,
                         showmeans=True,
                         showextrema=True,
                         showmedians=True)
-        plt.scatter(self.bin_info_df['Centers'].iloc[self.best_fit_df['Bin']],
+        plt.scatter(self.best_fit_bin_centers,
                     self.best_fit_df[amp + tag],
                     marker='o',
                     color='r',
@@ -45,10 +44,9 @@ class Plotter_Statistics(Plotter):
             plt.ylim(top=0)
         else:
             plt.ylim(bottom=0)
-        span = self.bin_info_df['Centers'].iloc[-1] - self.bin_info_df['Centers'].iloc[0]
+        span = self.bin_edges[-1] - self.bin_edges[0]
         buf = span * 0.13
-        plt.xlim(self.bin_info_df['Centers'].iloc[0] - buf,
-                    self.bin_info_df['Centers'].iloc[-1] + buf)
+        plt.xlim(self.bin_edges[0] - buf, self.bin_edges[-1] + buf)
         plt.ylabel(ylabel)
         plt.xlabel(self.xlabel)
         plt.legend()

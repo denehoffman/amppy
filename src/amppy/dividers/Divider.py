@@ -158,9 +158,12 @@ class Divider(ABC):
 
     def write_bin_info(self, header):
         with open(self.root_directory / "bin_info.txt", 'w') as writer:
-            bin_content = np.linspace(*self.low_high_tuple, self.n_bins)
+            low, high = self.low_high_tuple
+            step = (high - low) / self.n_bins
+            bin_edges = [low + n * step for n in range(self.n_bins + 1)]
+            bin_centers = [((b - a) / 2) + a for a, b in zip(bin_edges[:-1], bin_edges[1:])]
             lines = [header]
-            for i, content in enumerate(bin_content):
+            for i, content in enumerate(bin_centers):
                 lines.append(f"{i}\t{content}\n")
             writer.writelines(lines)
 
@@ -168,13 +171,13 @@ class Divider(ABC):
         with open(self.root_directory / "bin_info.txt") as reader:
             lines = reader.readlines()
             bin_numbers = []
-            bin_edges = []
+            bin_centers = []
             for line in lines[1:]:
                 line = line.strip()
-                bin_number, bin_edge = line.split("\t")
+                bin_number, bin_center = line.split("\t")
                 bin_numbers += [bin_number]
-                bin_edges += [bin_edge]
-        return bin_numbers, bin_edges
+                bin_centers += [bin_center]
+        return bin_numbers, bin_centers
 
 
     def create_tmp(self):
@@ -220,13 +223,13 @@ class Divider(ABC):
         pass
 
     
-    def divide(self, low, high, nbins, root, config, data, gen, acc, bkg=None, variable_name='mass', **kwargs):
+    def divide(self, low, high, nbins, root, config, data, gen, acc, bkg=None, variable_name="mass", variable_unit="GeV/$c^2$", **kwargs):
         self.preprocessing(**kwargs)
         self.n_bins = nbins 
         self.low_high_tuple = (low, high)
         self.load_paths(root, config, data, gen, acc, bkg)
         self.create_bins()
-        self.write_bin_info(f"bin\t{variable_name}\n")
+        self.write_bin_info(f"bin={low},{high}\t{variable_name}={variable_unit}\n")
         spinner = Halo(text='Dividing Data', spinner='dots')
         spinner.start("Dividing data")
         self.divide_directory(self.data_directory, "_DATA_", **kwargs)
@@ -262,5 +265,5 @@ def get_divider_type_string(root):
     if bin_info.exists():
         with open(bin_info) as reader:
             lines = reader.readlines()
-            output = lines[0].strip().split("\t")[1]
+            output = lines[0].strip().split("\t")[1].split("=")[0]
     return output

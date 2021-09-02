@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 import pandas as pd
+import numpy as np
 from halo import Halo
 
 class Plotter(ABC):
@@ -18,18 +19,38 @@ class Plotter(ABC):
         self.bootstrap = self.config_template.parent / (self.config_template.stem + "_bootstrap::fit_results.txt")
         self.fit_df = None
         self.best_fit_df = None
+        ### Fit DataFrame
         self.fit_df = pd.read_csv(self.fit_results, delimiter='\t', index_col=False)
+        amp_typing = {col: 'complex' for col in self.fit_df.columns if "AMP" in col}
+        self.fit_df = self.fit_df.astype(amp_typing)
+        amp_agg = {col: [np.real, np.imag] for col in amp_typing}
+        amp_names = [col + tag for col in amp_typing for tag in ["_re", "_im"]]
+        self.fit_df[amp_names] = self.fit_df.agg(amp_agg)
+        ### Best Fit DataFrame
         self.best_fit_df = self.fit_df.loc[self.fit_df.groupby(['Bin'])['likelihood'].idxmax()]
+        ### Bin Info DataFrame (columns = "bin=#,#" and "mass"/"t" etc)
         self.bin_info_df = pd.read_csv(self.bin_info, delimiter='\t')
-        self.bin_type = self.bin_info_df.columns.to_list()[1]
-        self.bin_width = self.bin_info_df[self.bin_type].iloc[1] - self.bin_info_df[self.bin_type].iloc[0]
-        self.bin_info_df['Centers'] = np.linspace(self.bin_info_df[self.bin_type].iloc[0] + self.bin_width / 2,
-                                                  self.bin_info_df[self.bin_type].iloc[-1] - self.bin_width / 2,
-                                                  len(self.bin_info_df))
+        self.bin_type = self.bin_info_df.columns.to_list()[1] # e.g. "mass=GeV/$c^2$"
+        self.bin_unit = self.bin_type.split("=")[1] # e.g. "GeV/$c^2$"
+        bin_edge_low, bin_edge_high = [float(val) for val in self.bin_info_df.columns.to_list()[0].split('=')[1].split(',')]
+        self.nbins = len(self.bin_info_df) # number of bins
+        self.bin_centers = self.bin_info_df[self.bin_type].to_list() # values of bin centers
+        self.best_fit_bin_centers = self.bin_info_df[self.bin_type].iloc[self.best_fit_df['Bins']] # values of best fit bin centers
+        self.is_bin_fit = [bin_n in self.bin_info_df['Bin'] for bin_n in range(self.nbins)] # bool array, true if a fit converged
+        self.bin_width = (bin_edge_high - bin_edge_low) / self.nbins # bin width
+        self.bin_edges = [bin_edge_low + n * self.bin_width for n in range(self.nbins + 1)] # bin edges (len = nbins+1)
+        self.bin_labels = [f"({low_edge} - {high_edge}) {self.bin_unit}" for low_edge, high_edge in zip(self.bin_edges[:-1], self.bin_edges[1:])]
+        ### list whose n-th element is a DataFrame with all converged fits in the n-th bin
+        self.fits_in_bin = [self.fit_df.loc[self.fit_df['Bin'] == bin_num] for bin_num in range(self.nbins)]
         self.bootstrap_df = None
         self.bootstrapped = False
         if self.bootstrap.exists():
             self.bootstrap_df = pd.read_csv(self.bootstrap, delimiter='\t', index_col=False)
+            amp_typing = {col: 'complex' for col in self.bootstrap_df.columns if "AMP" in col}
+            self.bootstrap_df = self.bootstrap_df.astype(amp_typing)
+            amp_agg = {col: [np.real, np.imag] for col in amp_typing}
+            amp_names = [col + tag for col in amp_typing for tag in ["_re", "_im"]]
+            self.bootstrap_df[amp_names] = self.bootstrap_df.agg(amp_agg)
             self.bootstrapped = True
         wave_letters = ['S', 'P', 'D', 'F', 'G']
         amp_score = lambda wave: 100 * wave_letters.index(wave[0]) + (-10 if wave[-2] == '-' else 10) * int(wave[1]) + (-1 if wave[-1] == '-' else 1)
@@ -73,7 +94,7 @@ class Plotter(ABC):
             return f"${amp_l}_{{{amp_m_sign}{amp_m}}}^{{{refl_sign}}}$"
         else:
             return f"${amp_l}_{{{amp_m_sign}{amp_m}}}$"
-    
+
     @staticmethod
     @abstractmethod
     def plotter_description():
