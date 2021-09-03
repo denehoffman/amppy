@@ -26,7 +26,7 @@
         ],
         "name": "FitResults",
         "sources": [
-            "src/amppy/fitresults/FitResults.pyx"
+            "/raid2/nhoffman/AmpPy/src/amppy/fitresults/FitResults.pyx"
         ]
     },
     "module_name": "FitResults"
@@ -914,7 +914,7 @@ static const char *__pyx_filename;
 
 static const char *__pyx_f[] = {
   "stringsource",
-  "src/amppy/fitresults/FitResults.pyx",
+  "FitResults.pyx",
 };
 /* Declarations.proto */
 #if CYTHON_CCOMPLEX
@@ -1711,7 +1711,7 @@ static const char __pyx_k_FitResultsWrapper_ampList[] = "FitResultsWrapper.ampLi
 static const char __pyx_k_FitResultsWrapper_intensity[] = "FitResultsWrapper.intensity";
 static const char __pyx_k_FitResultsWrapper_phaseDiff[] = "FitResultsWrapper.phaseDiff";
 static const char __pyx_k_FitResultsWrapper_likelihood[] = "FitResultsWrapper.likelihood";
-static const char __pyx_k_src_amppy_fitresults_FitResults[] = "src/amppy/fitresults/FitResults.pyx";
+static const char __pyx_k_raid2_nhoffman_AmpPy_src_amppy[] = "/raid2/nhoffman/AmpPy/src/amppy/fitresults/FitResults.pyx";
 static const char __pyx_k_FitResultsWrapper_productionPara[] = "FitResultsWrapper.productionParameter";
 static const char __pyx_k_FitResultsWrapper_total_intensit[] = "FitResultsWrapper.total_intensity";
 static const char __pyx_k_self_cobj_cannot_be_converted_to[] = "self.cobj cannot be converted to a Python object for pickling";
@@ -1767,6 +1767,7 @@ static PyObject *__pyx_n_s_phaseDiff;
 static PyObject *__pyx_n_s_prepare;
 static PyObject *__pyx_n_s_productionParameter;
 static PyObject *__pyx_n_s_qualname;
+static PyObject *__pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy;
 static PyObject *__pyx_n_s_range;
 static PyObject *__pyx_n_s_redirect_stdout;
 static PyObject *__pyx_n_s_reduce;
@@ -1777,7 +1778,6 @@ static PyObject *__pyx_kp_s_self_cobj_cannot_be_converted_to;
 static PyObject *__pyx_n_s_send;
 static PyObject *__pyx_n_s_setstate;
 static PyObject *__pyx_n_s_setstate_cython;
-static PyObject *__pyx_kp_s_src_amppy_fitresults_FitResults;
 static PyObject *__pyx_n_s_stdout;
 static PyObject *__pyx_n_s_stdout_redirected;
 static PyObject *__pyx_n_s_stdout_redirected_locals__redire;
@@ -6535,6 +6535,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_prepare, __pyx_k_prepare, sizeof(__pyx_k_prepare), 0, 0, 1, 1},
   {&__pyx_n_s_productionParameter, __pyx_k_productionParameter, sizeof(__pyx_k_productionParameter), 0, 0, 1, 1},
   {&__pyx_n_s_qualname, __pyx_k_qualname, sizeof(__pyx_k_qualname), 0, 0, 1, 1},
+  {&__pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_k_raid2_nhoffman_AmpPy_src_amppy, sizeof(__pyx_k_raid2_nhoffman_AmpPy_src_amppy), 0, 0, 1, 0},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
   {&__pyx_n_s_redirect_stdout, __pyx_k_redirect_stdout, sizeof(__pyx_k_redirect_stdout), 0, 0, 1, 1},
   {&__pyx_n_s_reduce, __pyx_k_reduce, sizeof(__pyx_k_reduce), 0, 0, 1, 1},
@@ -6545,7 +6546,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_send, __pyx_k_send, sizeof(__pyx_k_send), 0, 0, 1, 1},
   {&__pyx_n_s_setstate, __pyx_k_setstate, sizeof(__pyx_k_setstate), 0, 0, 1, 1},
   {&__pyx_n_s_setstate_cython, __pyx_k_setstate_cython, sizeof(__pyx_k_setstate_cython), 0, 0, 1, 1},
-  {&__pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_k_src_amppy_fitresults_FitResults, sizeof(__pyx_k_src_amppy_fitresults_FitResults), 0, 0, 1, 0},
   {&__pyx_n_s_stdout, __pyx_k_stdout, sizeof(__pyx_k_stdout), 0, 0, 1, 1},
   {&__pyx_n_s_stdout_redirected, __pyx_k_stdout_redirected, sizeof(__pyx_k_stdout_redirected), 0, 0, 1, 1},
   {&__pyx_n_s_stdout_redirected_locals__redire, __pyx_k_stdout_redirected_locals__redire, sizeof(__pyx_k_stdout_redirected_locals__redire), 0, 0, 1, 1},
@@ -6600,7 +6600,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__5 = PyTuple_Pack(1, __pyx_n_s_to); if (unlikely(!__pyx_tuple__5)) __PYX_ERR(1, 63, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__5);
   __Pyx_GIVEREF(__pyx_tuple__5);
-  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__5, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_redirect_stdout, 63, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(1, 63, __pyx_L1_error)
+  __pyx_codeobj__6 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__5, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_redirect_stdout, 63, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__6)) __PYX_ERR(1, 63, __pyx_L1_error)
 
   /* "FitResults.pyx":69
  * 
@@ -6623,7 +6623,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__8 = PyTuple_Pack(6, __pyx_n_s_to, __pyx_n_s_fd, __pyx_n_s_redirect_stdout, __pyx_n_s_redirect_stdout, __pyx_n_s_old_stdout, __pyx_n_s_f); if (unlikely(!__pyx_tuple__8)) __PYX_ERR(1, 49, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
-  __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_stdout_redirected, 49, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(1, 49, __pyx_L1_error)
+  __pyx_codeobj__4 = (PyObject*)__Pyx_PyCode_New(1, 0, 6, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_stdout_redirected, 49, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__4)) __PYX_ERR(1, 49, __pyx_L1_error)
 
   /* "FitResults.pyx":81
  * # might be redundant
@@ -6635,7 +6635,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__9 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_inFileStr); if (unlikely(!__pyx_tuple__9)) __PYX_ERR(1, 81, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__9);
   __Pyx_GIVEREF(__pyx_tuple__9);
-  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_init, 81, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(1, 81, __pyx_L1_error)
+  __pyx_codeobj__10 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__9, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_init, 81, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__10)) __PYX_ERR(1, 81, __pyx_L1_error)
 
   /* "FitResults.pyx":84
  *         self.fitobj = CyFitResults(inFileStr.encode('utf-8'))
@@ -6647,7 +6647,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__11 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__11)) __PYX_ERR(1, 84, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__11);
   __Pyx_GIVEREF(__pyx_tuple__11);
-  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_likelihood, 84, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(1, 84, __pyx_L1_error)
+  __pyx_codeobj__12 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__11, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_likelihood, 84, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__12)) __PYX_ERR(1, 84, __pyx_L1_error)
 
   /* "FitResults.pyx":88
  *             return self.fitobj.likelihood()
@@ -6659,7 +6659,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__13 = PyTuple_Pack(4, __pyx_n_s_self, __pyx_n_s_amps, __pyx_n_s_acc, __pyx_n_s_amp); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(1, 88, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
-  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_intensity, 88, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(1, 88, __pyx_L1_error)
+  __pyx_codeobj__14 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__13, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_intensity, 88, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__14)) __PYX_ERR(1, 88, __pyx_L1_error)
 
   /* "FitResults.pyx":92
  *             return self.fitobj.intensity([amp.encode('utf-8') for amp in amps], acc)
@@ -6671,7 +6671,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__15 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_acc); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(1, 92, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
-  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_total_intensity, 92, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(1, 92, __pyx_L1_error)
+  __pyx_codeobj__16 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__15, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_total_intensity, 92, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__16)) __PYX_ERR(1, 92, __pyx_L1_error)
 
   /* "FitResults.pyx":96
  *             return self.fitobj.total_intensity(acc)
@@ -6683,7 +6683,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__17 = PyTuple_Pack(3, __pyx_n_s_self, __pyx_n_s_amp1, __pyx_n_s_amp2); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(1, 96, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
-  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_phaseDiff, 96, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(1, 96, __pyx_L1_error)
+  __pyx_codeobj__18 = (PyObject*)__Pyx_PyCode_New(3, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__17, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_phaseDiff, 96, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__18)) __PYX_ERR(1, 96, __pyx_L1_error)
 
   /* "FitResults.pyx":100
  *             return self.fitobj.phaseDiff(amp1.encode('utf-8'), amp2.encode('utf-8'))
@@ -6695,7 +6695,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__19 = PyTuple_Pack(2, __pyx_n_s_self, __pyx_n_s_amp); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(1, 100, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
-  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_productionParameter, 100, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(1, 100, __pyx_L1_error)
+  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(2, 0, 2, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_productionParameter, 100, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(1, 100, __pyx_L1_error)
 
   /* "FitResults.pyx":104
  *             return self.fitobj.productionParameter(amp.encode('utf-8'))
@@ -6707,7 +6707,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_tuple__21 = PyTuple_Pack(1, __pyx_n_s_self); if (unlikely(!__pyx_tuple__21)) __PYX_ERR(1, 104, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__21);
   __Pyx_GIVEREF(__pyx_tuple__21);
-  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_src_amppy_fitresults_FitResults, __pyx_n_s_ampList, 104, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(1, 104, __pyx_L1_error)
+  __pyx_codeobj__22 = (PyObject*)__Pyx_PyCode_New(1, 0, 1, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__21, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_raid2_nhoffman_AmpPy_src_amppy, __pyx_n_s_ampList, 104, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__22)) __PYX_ERR(1, 104, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;

@@ -377,7 +377,7 @@ class Dispatcher(ABC):
                 config_old_lines = config_old.readlines()
             with open(bin_config_dest, 'w') as config_bootstrap:
                 for line in config_old_lines:
-                    if "ROOTDataReader" in line:
+                    if "ROOTDataReader LOOPDATAFILE" in line:
                         line = line.replace("ROOTDataReader", "ROOTDataReaderBootstrap")
                         line = line.replace("\n", " @seed\n")
                     if line.startswith("initialize"):

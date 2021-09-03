@@ -8,7 +8,7 @@ ROOT_HOME = os.environ["ROOTSYS"]
 
 amptools_extension = Extension(
         name="FitResults",
-        sources=["src/amppy/fitresults/FitResults.pyx"],
+        sources=["/raid2/nhoffman/AmpPy/src/amppy/fitresults/FitResults.pyx"],
         libraries=["AmpTools", "IUAmpTools", "MinuitInterface", "UpRootMinuit",
             "Physics", "MathCore", "Matrix"],
         library_dirs=["/home/nhoffman/env/gluex_top/AmpTools/AmpTools/lib", ROOT_HOME + "/lib"],
@@ -16,7 +16,7 @@ amptools_extension = Extension(
         language="c++")
 
 setup(
-    name="amppy",
+    name="amppy-denehoffman",
     version="0.0.2",
     author="Nathaniel Dene Hoffman",
     author_email="dene@cmu.edu",
@@ -24,10 +24,10 @@ setup(
     packages=find_packages(
         where='src'
     ),
-    package_dir={"": "src"},
-    scripts=["src/amppy/scripts/sbatch_job.csh",
-             "src/amppy/scripts/amppy_fit.py",
-             "src/amppy/scripts/amppy"],
+    package_dir={"": "/raid2/nhoffman/AmpPy/src"},
+    scripts=["/raid2/nhoffman/AmpPy/src/amppy/scripts/sbatch_job.csh",
+             "/raid2/nhoffman/AmpPy/src/amppy/scripts/amppy_fit.py",
+             "/raid2/nhoffman/AmpPy/src/amppy/scripts/amppy"],
     install_requires=[
         'numpy',
         'cython',
