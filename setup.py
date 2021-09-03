@@ -16,7 +16,7 @@ amptools_extension = Extension(
         language="c++")
 
 setup(
-    name="amppy-denehoffman",
+    name="amppy",
     version="0.0.2",
     author="Nathaniel Dene Hoffman",
     author_email="dene@cmu.edu",
