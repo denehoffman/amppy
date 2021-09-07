@@ -51,7 +51,7 @@ class Zlm:
         line += Zlm.letter(self.l)
         line += str(abs(self.m))
         if self.l != 0:
-            Zlm.sign_str(self.m)
+            line += Zlm.sign_str(self.m)
         line += Zlm.sign_str(self.refl)
         return line 
     
@@ -202,7 +202,7 @@ class Generator_Zlm(Generator):
                  '# to replace placeholder content like file paths, seeds, #',
                  '# and initializations                                    #',
                  '##########################################################\n']
-        lines.append("fit {self.reaction}")
+        lines.append(f"fit {self.reaction}")
         lines.append(f"reaction {self.reaction} {' '.join(self.particles)}")
         return '\n'.join(lines)
 
