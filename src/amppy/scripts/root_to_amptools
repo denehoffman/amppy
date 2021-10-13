@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 
 import sys
+import numpy as np
 import subprocess
 import rcdb
 from pathlib import Path
 import re
-import argparse
 import pandas as pd
+import argparse
 import os
 import shutil
 import errno
 import uproot
+from hepunits import c_light
+from particle import Particle
 from datetime import datetime
 
 def main():
     start_time = datetime.now()
-    db = rcdb.RCDBProvider("mysql://rcdb@hallddb.jlab.org/rcdb")
     parser = argparse.ArgumentParser(prog="root_to_amptools",
                                      description="Provides a pathway to convert a directory of ROOT files to AmpTools flat trees divided by polarization")
     parser.add_argument("directory", help="the input directory containing ROOT files")
-    parser.add_argument("dselector", help="DSelector to run which contains code to produce flat trees")
-    parser.add_argument("-o", "--output", help="the output directory for the new AmpTools flat trees")
+    parser.add_argument("-o", "--output", help="the output directory (will overwrite files with names \"trees_sum_*\" and/or \"flattree_*\"); default is set to input directory")
     parser.add_argument("-f", "--format", help="format of ROOT input files, use # as a wildcard")
+    parser.add_argument("--norcdb", choices=['AMO', 'PARA_0', 'PERP_45', 'PERP_90', 'PARA_135', 'OTHER'], help="merge all files in folder into one file, ignoring any run number info")
+    parser.add_argument("--convert", action='store_true', help="convert merged file(s) to AmpTools flat trees")
+    parser.add_argument("--weight", type=float, help="numerical weight (generally positive, even for background trees) for AmpTools flat tree events; only applies with --convert tag", default=1.0)
+    parser.add_argument("--finalstate", help="(optional) provide numerical final state explicitly, like \"1,3+4,6+7\"; only applies with --convert tag")
     args = parser.parse_args()
 
     file_format = "*.root"
@@ -38,18 +43,24 @@ def main():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(input_dir))
     if not output_dir.is_dir():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(output_dir))
-    merge(input_dir, output_dir, file_format)
-    dselector = Path(args.dselector).resolve()
-    if not dselector.suffix:
-        dselector = Path(str(dselector) + ".C")
-    if dselector.suffix == ".h":
-        dselector = Path(str(dselector).replace(".h", ".C"))
-    convert(output_dir, dselector)
+    first_file = list(input_dir.glob(file_format))[0]
+    if args.convert:
+        isThrown, final_state = get_final_state(first_file, args.finalstate)
+    if args.norcdb:
+        merge(input_dir, output_dir, file_format, args.norcdb)
+    else:
+        merge_rcdb(input_dir, output_dir, file_format)
+    if args.convert:
+        if isThrown:
+            convert_uproot_thrown(output_dir, final_state, args.weight)
+        else:
+            convert_uproot(output_dir, final_state, args.weight)
     end_time = datetime.now()
     print(f"Finished! Time Elapsed: {str(end_time-start_time)}")
 
 
-def merge(input_dir, output_dir, file_format):
+def merge_rcdb(input_dir, output_dir, file_format):
+    db = rcdb.RCDBProvider("mysql://rcdb@hallddb.jlab.org/rcdb")
     input_files = list(input_dir.glob(file_format))
     input_run_numbers = []
     input_file_tuples = []
@@ -133,12 +144,21 @@ def merge(input_dir, output_dir, file_format):
     subprocess.run(['hadd', '-f', str(output_dir / f"tree_sum_PARA_135_{min_run_number}_{max_run_number}.root")] + [str(f) for f in PARA_135_files])
     print("Merging Complete!")
 
-def convert(output_dir, dselector):
+def merge(input_dir, output_dir, file_format, pol_tag):
+    input_files = list(input_dir.glob(file_format))
+    ndigits = len(str(len(input_files))) + 1
+    print("Merging...")
+    subprocess.run(['hadd', '-f', str(output_dir / (f"tree_sum_{pol_tag}" + ndigits * "0" + f"_0{len(input_files)}.root"))] + [str(f) for f in input_files])
+    print("Merging Complete!")
+
+
+def convert_root(output_dir, dselector):
     # assumes merged files are already in output directory
+    # this function is not currently in use
     flattreefile = re.compile("dFlatTreeFileName\s*=\s*\".*\";")
     flattreename = re.compile("dFlatTreeName\s*=\s*\".*\";")
     for f in output_dir.glob("tree_sum_*.root"):
-        kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90)_\d*_\d*.root", f.name).group(1)
+        kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90|OTHER)_\d*_\d*.root", f.name).group(1)
         print(f"Using {dselector.name} to convert {f.name}->flattree_{kind}.root")
         with uproot.open(f) as rootfile:
             treename = rootfile.keys()[0].split(";")[0]
@@ -152,9 +172,240 @@ def convert(output_dir, dselector):
                     line = flattreename.sub("dFlatTreeName = \"kin\";", line)
                 dsel.write(line)
         subprocess.run(['root', '-l', '-b', '-q', str(f), f"run.C(\"{treename}\", \"{str(dselector) + '+'}\")"])
-        source = f"flattree_{kind}.root"
+        source = Path(f"flattree_{kind}.root")
         destination = output_dir / f"flattree_{kind}.root"
         source.replace(destination)
+
+
+def get_final_state(input_file, args_string=""):
+    with uproot.open(str(input_file)) as input_root_file:
+        tree_name = input_root_file.keys()[0]
+        if "Thrown" in tree_name:
+            print("Thrown tree format detected!")
+            return (True, get_final_state_thrown(input_file, args_string))
+        else:
+            return (False, get_final_state_normal(input_file, args_string))
+
+def get_final_state_normal(input_file, arg_string=""):
+    with uproot.open(str(input_file)) as input_root_file:
+        input_tree = input_root_file[input_root_file.keys()[0]]
+        event = next(input_tree.iterate(step_size=1, filter_name="*__P4_KinFit", library='np'))
+        particle_keys = list(event.keys())
+        particle_names = [key.replace("__P4_KinFit", "") for key in event.keys()]
+        if not arg_string:
+            finalize = False
+            while not finalize:
+                print("KinFit data detected for the following particles:")
+                for i, particle_name in enumerate(particle_names):
+                    if (not "ComboBeam" in particle_name) and (not "Decaying" in particle_name):
+                        print(f"\t{particle_name}" + (30 - len(particle_name)) * " " + str(i))
+                is_decaying = ["Decaying" in particle_name for particle_name in particle_names]
+                if any(is_decaying):
+                    print("Additionally, some decaying intermediate states were fit:")
+                    for i, particle_name in enumerate(particle_names):
+                        if "Decaying" in particle_name:
+                            short_name = particle_name.replace("Decaying","")
+                            print(f"\t{short_name}" + (30 - len(short_name)) * " " + str(i))
+                print('''Please write down the desired final state as the number
+corresponding with the particle separated by commas (including the recoil proton!).
+You can use a '+' to add final state particles together into a new final state.''')
+                state_string = input("> ").replace(" ", "")
+                groups = state_string.split(",")
+                all_digits = [int(i) for group in groups for i in group.split('+')]
+                invalid_digit = [not (0 <= i < len(particle_names)) for i in all_digits]
+                if any(invalid_digit):
+                    print("Invalid input!")
+                else:
+                    print(f"The input final state now has {len(groups)} particles:")
+                    for group in groups:
+                        print(f"\t( {' + '.join([particle_names[int(i)] for i in group.split('+')])} )")
+                    if input("Is this the desired final state? (y/n):").lower() == 'y':
+                        finalize = True
+        else:
+            state_string = arg_string
+        return [tuple([particle_keys[int(i)] for i in group.split('+')]) for group in state_string.split(",")]
+
+def get_final_state_thrown(input_file, arg_string=""):
+    with uproot.open(str(input_file)) as input_root_file:
+        input_tree = input_root_file[input_root_file.keys()[0]]
+        event = next(input_tree.iterate(['Thrown__PID'], step_size=1, library='np'))
+        particle_ids = event['Thrown__PID'][0] # step_size = 1 so this is an array with 1 element
+        particle_names = [Particle.from_pdgid(i).programmatic_name for i in particle_ids]
+        if not arg_string:
+            finalize = False
+            while not finalize:
+                print("Thrown information detected for the following particles:")
+                for i, particle_name in enumerate(particle_names):
+                    print(f"\t{particle_name}" + (30 - len(particle_name)) * " " + str(i))
+                print('''Please write down the desired final state as the number
+corresponding with the particle separated by commas (including the recoil proton!).
+You can use a '+' to add final state particles together into a new final state.''')
+                state_string = input("> ").replace(" ", "")
+                groups = state_string.split(",")
+                all_digits = [int(i) for group in groups for i in group.split('+')]
+                invalid_digit = [not (0 <= i < len(particle_names)) for i in all_digits]
+                if any(invalid_digit):
+                    print("Invalid input!")
+                else:
+                    print(f"The input final state now has {len(groups)} particles:")
+                    for group in groups:
+                        print(f"\t( {' + '.join([particle_names[int(i)] for i in group.split('+')])} )")
+                    if input("Is this the desired final state? (y/n):").lower() == 'y':
+                        finalize = True
+        else:
+            state_string = arg_string
+        return [tuple([int(i) for i in group.split('+')]) for group in state_string.split(",")]
+
+
+def convert_uproot(output_dir, final_state, weight=1):
+    # final_state is a list like [("a__P4_KinFit", "b__P4_KinFit"), ("c__P4_KinFit")]
+    # which would pair particles "a" and "b" into a new particle "d" and give a
+    # final state of "c" and "d"
+    final_state_flattened = [state for group in final_state for state in group]
+    input_files = output_dir.glob("tree_sum_*.root")
+    for input_file in input_files:
+        print(str(input_file))
+        kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90|OTHER)_\d*_\d*.root", input_file.name).group(1)
+        with uproot.open(input_file) as input_root_file:
+            tree_name = input_root_file.keys()[0]
+            n_acc_bins = -1
+            p = re.compile(".*_B(\d).*")
+            match = p.match(tree_name)
+            if match:
+                n_acc_bins = int(match.group(1))
+            input_tree = input_root_file[input_root_file.keys()[0]] # assuming only one TTree
+            output_tree_path = output_dir / f"flattree_{kind}.root"
+            with uproot.recreate(str(output_tree_path)) as output_tree:
+                output_tree.mktree("kin", {"Weight": "f4",
+                                        "E_Beam": "f4",
+                                        "Px_Beam": "f4",
+                                        "Py_Beam": "f4",
+                                        "Pz_Beam": "f4",
+                                        "NumFinalState": "i4",
+                                        "E_FinalState": ("f4", (len(final_state),)),
+                                        "Px_FinalState": ("f4", (len(final_state),)),
+                                        "Py_FinalState": ("f4", (len(final_state),)),
+                                        "Pz_FinalState": ("f4", (len(final_state),))})
+                keylist = ['NumCombos', 'RFTime_Measured', 'X4_Production', 'Beam__X4_Measured', 'ComboBeam__X4_KinFit', 'ComboBeam__P4_KinFit'] + final_state_flattened
+                for batch in input_tree.iterate(keylist, step_size=5000, library='np'): # batch size by rough time comparison
+                    # A 9:20min job here took 6:30min to do the traditional DSelector way
+                    batch_array = [dict(zip(batch, t)) for t in zip(*batch.values())]
+                    weight_arr = []
+                    e_beam_arr = []
+                    px_beam_arr = []
+                    py_beam_arr = []
+                    pz_beam_arr = []
+                    numfinalstate_arr = []
+                    e_finalstate_arr = []
+                    px_finalstate_arr = []
+                    py_finalstate_arr = []
+                    pz_finalstate_arr = []
+                    for event in batch_array:
+                        event_RFTime_Measured = event['RFTime_Measured']
+                        event_X4_Production = event['X4_Production']
+                        event_Beam__X4_Measured = event['Beam__X4_Measured']
+                        event_Beam__X4 = event['ComboBeam__X4_KinFit']
+                        event_Beam__P4 = event['ComboBeam__P4_KinFit']
+                        final_state_vecs = [tuple([event[state] for state in group]) for group in final_state]
+                        for combo_num in range(event['NumCombos']):
+                            locBeamX4 = event_Beam__X4[combo_num] # measured?
+                            locTargetX4 = event_X4_Production
+                            locRFTime = event_RFTime_Measured[combo_num]
+                            locBeamRFDeltaT = locBeamX4.member('fE') - (locRFTime + (locBeamX4.member('fP').member('fZ') - locTargetX4.member('fP').member('fZ')) / (c_light * 0.1))
+                            locAccidentalWeight = - 1 / (2 * n_acc_bins) if abs(locBeamRFDeltaT) > 0.5 * 4.008 else 1
+                            e_finalstate = [sum([stateP4[combo_num].member('fE') for stateP4 in group]) for group in final_state_vecs]
+                            px_finalstate = [sum([stateP4[combo_num].member('fP').member('fX') for stateP4 in group]) for group in final_state_vecs]
+                            py_finalstate = [sum([stateP4[combo_num].member('fP').member('fY') for stateP4 in group]) for group in final_state_vecs]
+                            pz_finalstate = [sum([stateP4[combo_num].member('fP').member('fZ') for stateP4 in group]) for group in final_state_vecs]
+                            weight_arr.append(locAccidentalWeight * weight)
+                            e_beam_arr.append(event_Beam__P4[combo_num].member('fE'))
+                            px_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fX'))
+                            py_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fY'))
+                            pz_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fZ'))
+                            numfinalstate_arr.append(len(final_state))
+                            e_finalstate_arr.append(e_finalstate)
+                            px_finalstate_arr.append(px_finalstate)
+                            py_finalstate_arr.append(py_finalstate)
+                            pz_finalstate_arr.append(pz_finalstate)
+                            
+                    # in batch loop
+                    output_tree['kin'].extend({"Weight": weight_arr,
+                                            "E_Beam": e_beam_arr,
+                                            "Px_Beam": px_beam_arr,
+                                            "Py_Beam": py_beam_arr,
+                                            "Pz_Beam": pz_beam_arr,
+                                            "NumFinalState": numfinalstate_arr,
+                                            "E_FinalState": e_finalstate_arr,
+                                            "Px_FinalState": px_finalstate_arr,
+                                            "Py_FinalState": py_finalstate_arr,
+                                            "Pz_FinalState": pz_finalstate_arr})
+
+def convert_uproot_thrown(output_dir, final_state_indexes, weight=1):
+    # final_state_indexes is a list like [(0,), (1,2,), (3,4,)]
+    # which would pair particles "1" and "2" along with "3" and "4" and give
+    # a final state 0,(1+2),(3+4)
+    input_files = output_dir.glob("tree_sum_*.root")
+    for input_file in input_files:
+        print(str(input_file))
+        kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90)_\d*_\d*.root", input_file.name).group(1)
+        with uproot.open(input_file) as input_root_file:
+            tree_name = input_root_file.keys()[0]
+            input_tree = input_root_file[input_root_file.keys()[0]] # assuming only one TTree
+            output_tree_path = output_dir / f"flattree_{kind}.root"
+            with uproot.recreate(str(output_tree_path)) as output_tree:
+                output_tree.mktree("kin", {"Weight": "f4",
+                                        "E_Beam": "f4",
+                                        "Px_Beam": "f4",
+                                        "Py_Beam": "f4",
+                                        "Pz_Beam": "f4",
+                                        "NumFinalState": "i4",
+                                        "E_FinalState": ("f4", (len(final_state_indexes),)),
+                                        "Px_FinalState": ("f4", (len(final_state_indexes),)),
+                                        "Py_FinalState": ("f4", (len(final_state_indexes),)),
+                                        "Pz_FinalState": ("f4", (len(final_state_indexes),))})
+                keylist = ['ThrownBeam__P4', 'Thrown__P4']
+                for batch in input_tree.iterate(keylist, step_size=5000, library='np'): # batch size by rough time comparison
+                    # A 9:20min job here took 6:30min to do the traditional DSelector way
+                    batch_array = [dict(zip(batch, t)) for t in zip(*batch.values())]
+                    weight_arr = []
+                    e_beam_arr = []
+                    px_beam_arr = []
+                    py_beam_arr = []
+                    pz_beam_arr = []
+                    numfinalstate_arr = []
+                    e_finalstate_arr = []
+                    px_finalstate_arr = []
+                    py_finalstate_arr = []
+                    pz_finalstate_arr = []
+                    for event in batch_array: # no combos in thrown trees
+                        event_Beam__P4 = event['ThrownBeam__P4']
+                        final_state_vecs = [tuple([event['Thrown__P4'][i_state] for i_state in group]) for group in final_state_indexes]
+                        e_finalstate = [sum([stateP4.member('fE') for stateP4 in group]) for group in final_state_vecs]
+                        px_finalstate = [sum([stateP4.member('fP').member('fX') for stateP4 in group]) for group in final_state_vecs]
+                        py_finalstate = [sum([stateP4.member('fP').member('fY') for stateP4 in group]) for group in final_state_vecs]
+                        pz_finalstate = [sum([stateP4.member('fP').member('fZ') for stateP4 in group]) for group in final_state_vecs]
+                        weight_arr.append(1)
+                        e_beam_arr.append(event_Beam__P4.member('fE'))
+                        px_beam_arr.append(event_Beam__P4.member('fP').member('fX'))
+                        py_beam_arr.append(event_Beam__P4.member('fP').member('fY'))
+                        pz_beam_arr.append(event_Beam__P4.member('fP').member('fZ'))
+                        numfinalstate_arr.append(len(final_state_indexes))
+                        e_finalstate_arr.append(e_finalstate)
+                        px_finalstate_arr.append(px_finalstate)
+                        py_finalstate_arr.append(py_finalstate)
+                        pz_finalstate_arr.append(pz_finalstate)
+                            
+                    # in batch loop
+                    output_tree['kin'].extend({"Weight": weight_arr,
+                                            "E_Beam": e_beam_arr,
+                                            "Px_Beam": px_beam_arr,
+                                            "Py_Beam": py_beam_arr,
+                                            "Pz_Beam": pz_beam_arr,
+                                            "NumFinalState": numfinalstate_arr,
+                                            "E_FinalState": e_finalstate_arr,
+                                            "Px_FinalState": px_finalstate_arr,
+                                            "Py_FinalState": py_finalstate_arr,
+                                            "Pz_FinalState": pz_finalstate_arr})
 
 
 if __name__ == "__main__":
