@@ -14,7 +14,7 @@ from amppy import plotting
 
 def config_menu(root_dir: Path, fit=False):
     if not root_dir.is_dir():
-        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(path))
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(root_dir))
     if not fit:
         configs = list(root_dir.glob("*.cfg"))
     else:
