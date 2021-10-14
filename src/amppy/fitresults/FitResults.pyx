@@ -22,6 +22,8 @@ cdef class CyFitResults:
 
     def __init__(self, string inFileStr):
         self.cobj = new FitResults(inFileStr)
+        if self.cobj == NULL:
+            raise MemoryError('Not enough memory.')
 
     def __del__(self):
         del self.cobj
