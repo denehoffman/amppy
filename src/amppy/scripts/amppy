@@ -6,6 +6,7 @@ from amppy.dividers.Divider import get_divider_type_string
 from amppy import backends
 from amppy.backends.SLURM import SLURM
 from amppy.generators.Generator_Zlm import Generator_Zlm
+from amppy.generators.Generator_ZlmBW import Generator_ZlmBW
 from simple_term_menu import TerminalMenu
 from pathlib import Path
 import errno
@@ -60,7 +61,15 @@ See 'amppy <command> --help' to read about a specific subcommand''')
 
 
     def generate(self):
-        generator = Generator_Zlm()
+        generator_menu = TerminalMenu(menu_entries=['Mass Dependent', 'Mass Independent'],
+                                      title="Select a Generator", menu_cursor="> ",
+                                      menu_cursor_style=("fg_red", "bold"),
+                                      menu_highlight_style=("bg_black", "fg_green"))
+        sel = generator_menu.show()
+        if sel == 0:
+            generator = Generator_Zlm()
+        if sel ==1:
+            generator = Generator_ZlmBW()
         generator.show_menu()
 
 
