@@ -15,6 +15,8 @@ import uproot
 from hepunits import c_light
 from particle import Particle
 from datetime import datetime
+from tqdm import tqdm
+
 
 def main():
     start_time = datetime.now()
@@ -43,18 +45,21 @@ def main():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(input_dir))
     if not output_dir.is_dir():
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), str(output_dir))
-    first_file = list(input_dir.glob(file_format))[0]
     if args.convert:
-        isThrown, final_state = get_final_state(first_file, args.finalstate)
+        isThrown, final_state = get_final_state(input_dir.glob(file_format), args.finalstate)
     if args.norcdb:
-        merge(input_dir, output_dir, file_format, args.norcdb)
+        merged_file = merge(input_dir, output_dir, file_format, args.norcdb)
     else:
         merge_rcdb(input_dir, output_dir, file_format)
     if args.convert:
-        if isThrown:
-            convert_uproot_thrown(output_dir, final_state, args.weight)
+        if args.norcdb:
+            input_files = [merged_file]
         else:
-            convert_uproot(output_dir, final_state, args.weight)
+            input_files = output_dir.glob("tree_sum_*.root")
+        if isThrown:
+            convert_uproot_thrown(input_files, output_dir, final_state, args.weight)
+        else:
+            convert_uproot(input_files, output_dir, final_state, args.weight)
     end_time = datetime.now()
     print(f"Finished! Time Elapsed: {str(end_time-start_time)}")
 
@@ -148,8 +153,9 @@ def merge(input_dir, output_dir, file_format, pol_tag):
     input_files = list(input_dir.glob(file_format))
     ndigits = len(str(len(input_files))) + 1
     print("Merging...")
-    subprocess.run(['hadd', '-f', str(output_dir / (f"tree_sum_{pol_tag}" + ndigits * "0" + f"_0{len(input_files)}.root"))] + [str(f) for f in input_files])
+    subprocess.run(['hadd', '-f', str(output_dir / (f"tree_sum_{pol_tag}_" + ndigits * "0" + f"_0{len(input_files)}.root"))] + [str(f) for f in input_files])
     print("Merging Complete!")
+    return output_dir / (f"tree_sum_{pol_tag}_" + ndigits * "0" + f"_0{len(input_files)}.root")
 
 
 def convert_root(output_dir, dselector):
@@ -177,14 +183,20 @@ def convert_root(output_dir, dselector):
         source.replace(destination)
 
 
-def get_final_state(input_file, args_string=""):
-    with uproot.open(str(input_file)) as input_root_file:
-        tree_name = input_root_file.keys()[0]
-        if "Thrown" in tree_name:
-            print("Thrown tree format detected!")
-            return (True, get_final_state_thrown(input_file, args_string))
-        else:
-            return (False, get_final_state_normal(input_file, args_string))
+def get_final_state(input_file_iterator, args_string=""):
+    for input_file in input_file_iterator:
+        try:
+            with uproot.open(str(input_file)) as input_root_file:
+                tree_name = input_root_file.keys()[0]
+                if "Thrown" in tree_name:
+                    print("Thrown tree format detected!")
+                    return (True, get_final_state_thrown(input_file, args_string))
+                else:
+                    return (False, get_final_state_normal(input_file, args_string))
+        except:
+            print(f"Couldn't get any tree information from {str(input_file)}, possibly corrupted/empty?")
+    print("All files seem to be corrupted/empty!")
+    sys.exit(1)
 
 def get_final_state_normal(input_file, arg_string=""):
     with uproot.open(str(input_file)) as input_root_file:
@@ -257,14 +269,13 @@ You can use a '+' to add final state particles together into a new final state.'
         return [tuple([int(i) for i in group.split('+')]) for group in state_string.split(",")]
 
 
-def convert_uproot(output_dir, final_state, weight=1):
+def convert_uproot(input_files, output_dir, final_state, weight=1):
     # final_state is a list like [("a__P4_KinFit", "b__P4_KinFit"), ("c__P4_KinFit")]
     # which would pair particles "a" and "b" into a new particle "d" and give a
     # final state of "c" and "d"
     final_state_flattened = [state for group in final_state for state in group]
-    input_files = output_dir.glob("tree_sum_*.root")
     for input_file in input_files:
-        print(str(input_file))
+        print(f"Converting {str(input_file)} to AmpTools format")
         kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90|OTHER)_\d*_\d*.root", input_file.name).group(1)
         with uproot.open(input_file) as input_root_file:
             tree_name = input_root_file.keys()[0]
@@ -287,7 +298,7 @@ def convert_uproot(output_dir, final_state, weight=1):
                                         "Py_FinalState": ("f4", (len(final_state),)),
                                         "Pz_FinalState": ("f4", (len(final_state),))})
                 keylist = ['NumCombos', 'RFTime_Measured', 'X4_Production', 'Beam__X4_Measured', 'ComboBeam__X4_KinFit', 'ComboBeam__P4_KinFit'] + final_state_flattened
-                for batch in input_tree.iterate(keylist, step_size=5000, library='np'): # batch size by rough time comparison
+                for batch in tqdm(input_tree.iterate(keylist, step_size=5000, library='np')): # batch size by rough time comparison
                     # A 9:20min job here took 6:30min to do the traditional DSelector way
                     batch_array = [dict(zip(batch, t)) for t in zip(*batch.values())]
                     weight_arr = []
@@ -317,16 +328,17 @@ def convert_uproot(output_dir, final_state, weight=1):
                             px_finalstate = [sum([stateP4[combo_num].member('fP').member('fX') for stateP4 in group]) for group in final_state_vecs]
                             py_finalstate = [sum([stateP4[combo_num].member('fP').member('fY') for stateP4 in group]) for group in final_state_vecs]
                             pz_finalstate = [sum([stateP4[combo_num].member('fP').member('fZ') for stateP4 in group]) for group in final_state_vecs]
-                            weight_arr.append(locAccidentalWeight * weight)
-                            e_beam_arr.append(event_Beam__P4[combo_num].member('fE'))
-                            px_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fX'))
-                            py_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fY'))
-                            pz_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fZ'))
-                            numfinalstate_arr.append(len(final_state))
-                            e_finalstate_arr.append(e_finalstate)
-                            px_finalstate_arr.append(px_finalstate)
-                            py_finalstate_arr.append(py_finalstate)
-                            pz_finalstate_arr.append(pz_finalstate)
+                            if 8.2 < event_Beam__P4[combo_num].member('fE') < 8.8:
+                                weight_arr.append(locAccidentalWeight * weight)
+                                e_beam_arr.append(event_Beam__P4[combo_num].member('fE'))
+                                px_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fX'))
+                                py_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fY'))
+                                pz_beam_arr.append(event_Beam__P4[combo_num].member('fP').member('fZ'))
+                                numfinalstate_arr.append(len(final_state))
+                                e_finalstate_arr.append(e_finalstate)
+                                px_finalstate_arr.append(px_finalstate)
+                                py_finalstate_arr.append(py_finalstate)
+                                pz_finalstate_arr.append(pz_finalstate)
                             
                     # in batch loop
                     output_tree['kin'].extend({"Weight": weight_arr,
@@ -340,11 +352,10 @@ def convert_uproot(output_dir, final_state, weight=1):
                                             "Py_FinalState": py_finalstate_arr,
                                             "Pz_FinalState": pz_finalstate_arr})
 
-def convert_uproot_thrown(output_dir, final_state_indexes, weight=1):
+def convert_uproot_thrown(input_files, output_dir, final_state_indexes, weight=1):
     # final_state_indexes is a list like [(0,), (1,2,), (3,4,)]
     # which would pair particles "1" and "2" along with "3" and "4" and give
     # a final state 0,(1+2),(3+4)
-    input_files = output_dir.glob("tree_sum_*.root")
     for input_file in input_files:
         print(str(input_file))
         kind = re.search("tree_sum_(AMO|PARA_0|PARA_135|PERP_45|PERP_90)_\d*_\d*.root", input_file.name).group(1)
@@ -364,7 +375,7 @@ def convert_uproot_thrown(output_dir, final_state_indexes, weight=1):
                                         "Py_FinalState": ("f4", (len(final_state_indexes),)),
                                         "Pz_FinalState": ("f4", (len(final_state_indexes),))})
                 keylist = ['ThrownBeam__P4', 'Thrown__P4']
-                for batch in input_tree.iterate(keylist, step_size=5000, library='np'): # batch size by rough time comparison
+                for batch in tqdm(input_tree.iterate(keylist, step_size=5000, library='np')): # batch size by rough time comparison
                     # A 9:20min job here took 6:30min to do the traditional DSelector way
                     batch_array = [dict(zip(batch, t)) for t in zip(*batch.values())]
                     weight_arr = []
