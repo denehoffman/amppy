@@ -61,7 +61,7 @@ See 'amppy <command> --help' to read about a specific subcommand''')
 
 
     def generate(self):
-        generator_menu = TerminalMenu(menu_entries=['Mass Dependent', 'Mass Independent'],
+        generator_menu = TerminalMenu(menu_entries=['Mass Independent', 'Mass Dependent'],
                                       title="Select a Generator", menu_cursor="> ",
                                       menu_cursor_style=("fg_red", "bold"),
                                       menu_highlight_style=("bg_black", "fg_green"))
