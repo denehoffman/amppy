@@ -21,10 +21,8 @@ setup(
     author="Nathaniel Dene Hoffman",
     author_email="dene@cmu.edu",
     ext_modules=cythonize(amptools_extension),
-    packages=find_packages(
-        where='src'
-    ),
-    package_dir={"": "/raid2/nhoffman/AmpPy/src"},
+    packages=find_packages('src'),
+    package_dir={"": "src"},
     scripts=["/raid2/nhoffman/AmpPy/src/amppy/scripts/sbatch_job.csh",
              "/raid2/nhoffman/AmpPy/src/amppy/scripts/amppy_fit.py",
              "/raid2/nhoffman/AmpPy/src/amppy/scripts/amppy"],
@@ -36,7 +34,9 @@ setup(
         'colorama',
         'pandas',
         'halo',
-        'matplotlib'
+        'matplotlib',
+        'particle',
+        'tqdm'
     ],
     zip_safe=False
 )
