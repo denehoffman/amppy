@@ -43,7 +43,7 @@ class SLURM(Dispatcher):
                                   f"--ntasks={self.threads}",
                                   f"--partition={self.queue}",
                                   f"--mem={self.cpu_memory * self.threads}",
-                                  f"--time=10:00",
+                                  f"--time=1:00:00",
                                   "--quiet"]
                     slurm_command = ["sbatch_job.csh"]
                     command_args = [str(bin_dir),
