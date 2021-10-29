@@ -213,7 +213,7 @@ class Divider(ABC):
         self.generated_directory = Path(gen).resolve()
         self.accepted_directory = Path(acc).resolve()
         if bkg != None:
-            self.background_directory = path(bkg).resolve()
+            self.background_directory = Path(bkg).resolve()
 
 
     def preprocessing(self, **kwargs):
@@ -242,7 +242,7 @@ class Divider(ABC):
         spinner.succeed("Accepted MC divided")
         if bkg != None:
             spinner.start("Dividing background")
-            self.divide_directory(self.data_directory, "_BKG_", **kwargs)
+            self.divide_directory(self.background_directory, "_BKG_", **kwargs)
             spinner.succeed("Background divided")
         spinner.start("Moving ROOT files into bins")
         self.bin_split_files()
